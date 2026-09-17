@@ -220,26 +220,32 @@ export const Chat = () => {
                     conversationCategory={activeChat?.category || "General"}
                   />
                   
-                  {/* INJECTED CITATIONS AND QR CODE UI */}
+                  {/* UPGRADED: HIGHLY VISIBLE GREEN CITATION & QR CODE BLOCK */}
                   {msg.sender === 'assistant' && (msg.sources?.length > 0 || msg.qr_code_base64) && (
-                    <div className="flex flex-col items-start mt-2 sm:ml-12 pl-4 border-l-2 border-slate-200 dark:border-slate-800">
+                    <div className="flex flex-col items-start mt-3 sm:ml-12 pl-4 border-l-4 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10 p-4 rounded-r-lg shadow-sm">
                       
                       {msg.sources && msg.sources.length > 0 && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400 italic mb-2 font-medium">
-                          📄 Source: {msg.sources[0].documentName} {msg.sources[0].provision ? `(${msg.sources[0].provision})` : ''}
-                        </p>
+                        <div className="mb-4">
+                          <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">
+                            Verified Official Source
+                          </p>
+                          <p className="text-sm text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-2">
+                            📄 {msg.sources[0].documentName} {msg.sources[0].provision ? `(${msg.sources[0].provision})` : ''}
+                          </p>
+                        </div>
                       )}
                       
                       {msg.qr_code_base64 && (
-                        <div className="mt-1 p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col items-center gap-2">
-                          <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5 uppercase tracking-wide">
-                            <QrCode className="h-3.5 w-3.5 text-primary-500" />
-                            Scan to save on WhatsApp
+                        <div className="mt-1 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center gap-2 shadow-sm">
+                          <p className="text-[12px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 uppercase tracking-wide">
+                            <QrCode className="h-4 w-4 text-emerald-600" />
+                            Scan for WhatsApp Receipt
                           </p>
+                          {/* bg-white p-1 ensures QR code always scans, even in Dark Mode */}
                           <img 
                             src={`data:image/png;base64,${msg.qr_code_base64}`} 
                             alt="WhatsApp QR Code" 
-                            className="w-28 h-28 rounded-lg shadow-sm border border-slate-200/50 bg-white p-1"
+                            className="w-36 h-36 rounded-lg shadow-sm border border-slate-200 bg-white p-1"
                           />
                         </div>
                       )}
