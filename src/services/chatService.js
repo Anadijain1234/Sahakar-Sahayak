@@ -36,14 +36,14 @@ export const chatService = {
         sources: (data.sources || []).map((source, index) => ({
           id: `${source.document}-${source.page}-${index}`,
           documentName: source.document,
-          provision: source.page
-            ? `Page ${source.page}`
-            : "",
+          provision: source.page ? `Page ${source.page}` : "",
         })),
         suggestedQuestions: [],
         confidence: data.confidence,
         intent: data.intent,
         language: data.language,
+        action_url: data.action_url || null,
+        qr_code_base64: data.qr_code_base64 || null,
       };
     } catch (error) {
       console.error("[API] Failed to send message:", error);
