@@ -58,3 +58,5 @@ uvicorn==0.52.4
 websockets==17.1
 SQLAlchemy
 PyJWT
+qrcode
+pillow
