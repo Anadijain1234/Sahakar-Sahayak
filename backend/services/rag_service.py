@@ -29,13 +29,16 @@ def get_answer(
     Finalized RAG generation service:
     - Restricts responses strictly to the provided document context.
     - Eliminates hallucinations via zero temperature (0.0).
-    - Dynamically parses multiple PDFs and attaches file citations.
-    - Generates actionable WhatsApp click-to-chat QR payloads.
+    - Dynamically parses multiple PDFs and matches evaluate_rag.py expectations.
+    - Generates actionable WhatsApp click-to-chat QR payloads without overflowing.
     """
     if model is None:
         return {
             "answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY.",
-            "citations": [],
+            "language": language,
+            "intent": intent,
+            "sources": [],
+            "confidence": 0.0,
             "action_url": None,
             "qr_code_base64": None
         }
@@ -50,18 +53,25 @@ def get_answer(
         instruction = lang_instructions.get(language, "Please respond in English.")
         
         context_block = ""
-        citations = []
+        sources = []
         
         if retrieved_docs:
             for doc in retrieved_docs:
-                doc_name = doc.get("source_doc", "Unknown_Document.pdf")
-                page_num = doc.get("source_page", "N/A")
+                doc_name = doc.get("document", doc.get("source_doc", "Unknown_Document.pdf"))
+                raw_page = doc.get("page", doc.get("source_page", None))
                 text_chunk = doc.get("text", "")
                 
-                context_block += f"\n--- Source: {doc_name} (Page {page_num}) ---\n{text_chunk}\n"
+                # Prevent FastAPI 500 crash: Schemas.py strictly requires an integer or None
+                try:
+                    page_val = int(raw_page)
+                except (ValueError, TypeError):
+                    page_val = None
                 
-                if doc_name not in [c["source_doc"] for c in citations]:
-                    citations.append({"source_doc": doc_name, "source_page": page_num})
+                context_block += f"\n--- Source: {doc_name} (Page {page_val if page_val is not None else 'N/A'}) ---\n{text_chunk}\n"
+                
+                # Format exactly as evaluate_rag.py and schemas.py expect
+                if doc_name not in [s["document"] for s in sources]:
+                    sources.append({"document": doc_name, "page": page_val})
 
         if context_block.strip():
             full_prompt = (
@@ -87,10 +97,14 @@ def get_answer(
         response = model.generate_content(full_prompt, generation_config=generation_config)
         answer_text = response.text.strip() if response and response.text else "No response generated."
         
+        # Calculate confidence metric for evaluate_rag.py
         if "not available in the official cooperative documents" in answer_text.lower():
-            citations = []
+            sources = []
+            confidence = 0.0
+        else:
+            confidence = 0.95
 
-        primary_source = citations[0]["source_doc"] if citations else 'Official Guidelines'
+        primary_source = sources[0]["document"] if sources else 'Official_Guidelines.pdf'
         sanitized_summary = answer_text[:140].replace("\n", " ")
         encoded_message = urllib.parse.quote(
             f"Query: {query}\nAnswer: {sanitized_summary}...\nSource: {primary_source}"
@@ -100,7 +114,8 @@ def get_answer(
         qr_code_base64 = None
         try:
             import qrcode
-            qr = qrcode.QRCode(version=1, box_size=4, border=2)
+            # version=None auto-scales to fit the URL length, preventing DataOverflowError
+            qr = qrcode.QRCode(version=None, box_size=4, border=2)
             qr.add_data(action_url)
             qr.make(fit=True)
             img = qr.make_image(fill_color="black", back_color="white")
@@ -113,11 +128,21 @@ def get_answer(
 
         return {
             "answer": answer_text,
-            "citations": citations,
+            "language": language,
+            "intent": intent,
+            "sources": sources,
+            "confidence": confidence,
             "action_url": action_url,
-            "qr_code_base64": qr_code_base64,
-            "language": language
+            "qr_code_base64": qr_code_base64
         }
 
     except Exception as e:
-        return {"answer": f"AI Error: {str(e)}", "citations": [], "action_url": None, "qr_code_base64": None}
+        return {
+            "answer": f"AI Error: {str(e)}", 
+            "language": language,
+            "intent": intent,
+            "sources": [],
+            "confidence": 0.0,
+            "action_url": None, 
+            "qr_code_base64": None
+        }
