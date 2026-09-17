@@ -1,2 +1,4 @@
 qrcode
 pillow
+qrcode
+pillow
