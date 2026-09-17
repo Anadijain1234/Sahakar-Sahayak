@@ -7,7 +7,7 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-API_URL = os.getenv("API_URL", "https://sahakar-sahayak-2.onrender.com/query")
+API_URL = os.getenv("API_URL", "https://sahakar-sahayak-4.onrender.com//query")
 
 if not BOT_TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN is missing from your environment variables!")

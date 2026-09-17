@@ -144,7 +144,7 @@ export const ChatInput = ({ onSend, isLoading }) => {
           );
 
           const response = await fetch(
-            "https://sahakar-sahayak-2.onrender.com/voice/transcribe",
+            "https://sahakar-sahayak-4.onrender.com/voice/transcribe",
             {
               method: "POST",
               body: formData

@@ -1,7 +1,7 @@
 // Authentication Service communicating with FastAPI Backend
 
 // FIXED: Forced the absolute URL to your Python backend so it never talks to itself
-const BACKEND_URL = import.meta.env.VITE_API_URL || "https://sahakar-sahayak-2.onrender.com";
+const BACKEND_URL = import.meta.env.VITE_API_URL || "https://sahakar-sahayak-4.onrender.com";
 const API_BASE = `${BACKEND_URL.replace(/\/$/, '')}/api/auth`;
 
 const getUrl = (path) => `${API_BASE}${path}`;
