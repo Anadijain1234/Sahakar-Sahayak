@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://sahakar-sahayak-4.onrender.com/";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://sahakar-sahayak-4.onrender.com";
 
 export const chatService = {
   sendMessage: async (messageText, language = "en", conversationId = null) => {
