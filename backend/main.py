@@ -11,10 +11,10 @@ load_dotenv()
 
 # Safe import for Gemini
 try:
-    import google.generativeai as genai
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-    if GEMINI_API_KEY:
-        genai.configure(api_key=GEMINI_API_KEY)
+    from sarvamai import SarvamAI
+    SARVAM_API_KEY = os.getenv("SARVAM_API_KEY")
+    if SARVAM_API_KEY:
+        genai.configure(api_key=SARVAM_API_KEY)
 except ImportError:
     genai = None
 
