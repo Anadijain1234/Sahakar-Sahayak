@@ -1,150 +1,96 @@
 import os
-import io
-import base64
-import urllib.parse
-from dotenv import load_dotenv
+import json
+import re
+from pypdf import PdfReader
+from rank_bm25 import BM25Okapi
 
-load_dotenv()
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+DOCS_DIR = os.path.join(BASE_DIR, "backend", "data", "documents")
+if not os.path.exists(DOCS_DIR):
+    DOCS_DIR = "/workspaces/Sahakar-Sahayak/backend/data/documents"
+METADATA_PATH = os.path.join(BASE_DIR, "backend", "data", "metadata.json")
 
-# Check for API Key safely without crashing
-api_key = os.getenv("GEMINI_API_KEY")
-model = None
-
-if api_key:
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-3.6-flash')
-    except Exception as e:
-        print(f"Gemini init warning: {e}")
-        model = None
+bm25 = None
+documents_metadata = []
 
 
-def normalize_query_to_english(raw_query: str) -> str:
-    """Translates mixed queries to English if model is available, otherwise returns raw query."""
-    if model is None:
-        return raw_query
-        
-    try:
-        import google.generativeai as genai
-        prompt = (
-            "You are a translation filter. The user has provided text that may contain a mix "
-            "of Kannada, Marathi, Nepali, Hindi, and English. Translate the core intent into "
-            "a single, clean English query for a database search. "
-            "ONLY output the English translation, absolutely nothing else.\n\n"
-            f"User Text: {raw_query}"
-        )
-        generation_config = genai.types.GenerationConfig(temperature=0.0)
-        response = model.generate_content(prompt, generation_config=generation_config)
-        return response.text.strip()
-    except Exception:
-        return raw_query
+def tokenize(text: str) -> list:
+    """Cleans and splits text into searchable keyword tokens."""
+    cleaned = re.sub(r"[^\w\s]", " ", text.lower())
+    return [word for word in cleaned.split() if len(word) > 2]
 
 
-def get_answer(
-    query: str, 
-    language: str = "en", 
-    intent: str = "general",
-    retrieved_docs: list = None
-) -> dict:
-    context_block = ""
-    sources = []
-    
-    # 1. Always extract and preserve document sources first
-    if retrieved_docs:
-        for doc in retrieved_docs:
-            doc_name = doc.get("document", doc.get("source_doc", "Unknown_Document.pdf"))
-            raw_page = doc.get("page", doc.get("source_page", None))
-            text_chunk = doc.get("text", "")
-            
-            try:
-                page_val = int(raw_page)
-            except (ValueError, TypeError):
-                page_val = None
-            
-            context_block += f"\n--- Source: {doc_name} (Page {page_val if page_val is not None else 'N/A'}) ---\n{text_chunk}\n"
-            
-            if doc_name not in [s["document"] for s in sources]:
-                sources.append({"document": doc_name, "page": page_val})
+def build_or_load_index():
+    """Extracts text from PDFs, tokenizes chunks, and builds the BM25 index."""
+    global bm25, documents_metadata
 
-    # 2. Offline / Local Evaluation Mode (Runs when no API Key is set in Codespace)
-    if model is None:
-        if sources:
-            top_chunk = retrieved_docs[0].get("text", "") if retrieved_docs else ""
-            answer_text = f"Official Cooperative Scheme Details: {top_chunk[:300]}..."
-            confidence = 0.95
-        else:
-            answer_text = "This information is not available in the official cooperative documents."
-            confidence = 0.0
+    if not os.path.exists(DOCS_DIR):
+        print(f"❌ Documents directory not found: {DOCS_DIR}")
+        return
 
-        return {
-            "answer": answer_text,
-            "language": language,
-            "intent": intent,
-            "sources": sources,
-            "confidence": confidence,
-            "action_url": None,
-            "qr_code_base64": None
-        }
+    pdf_files = [f for f in os.listdir(DOCS_DIR) if f.endswith(".pdf")]
+    chunks = []
+    metadata_list = []
 
-    # 3. Online Mode (Runs automatically on Render with GEMINI_API_KEY)
-    try:
-        import google.generativeai as genai
-        lang_instructions = {
-            "kn": "Please respond in Kannada (ಕನ್ನಡ).",
-            "hi": "Please respond in Hindi (हिंदी).",
-            "ne": "Please respond in Nepali (नेपाली).",
-            "en": "Please respond in English."
-        }
-        instruction = lang_instructions.get(language, "Please respond in English.")
+    for pdf_name in pdf_files:
+        pdf_path = os.path.join(DOCS_DIR, pdf_name)
+        try:
+            reader = PdfReader(pdf_path)
+            for page_idx, page in enumerate(reader.pages):
+                page_text = page.extract_text() or ""
+                paragraphs = page_text.split("\n\n")
+                for para in paragraphs:
+                    clean_para = " ".join(para.split())
+                    if len(clean_para) > 60:
+                        chunks.append(clean_para)
+                        metadata_list.append({
+                            "document": pdf_name,
+                            "page": page_idx + 1,
+                            "text": clean_para
+                        })
+        except Exception as e:
+            print(f"Error reading {pdf_name}: {e}")
 
-        full_prompt = (
-            f"You are Sahakar Sahayak, the official digital assistant for Indian Cooperative Societies.\n"
-            f"{instruction}\n\n"
-            f"CRITICAL RULES:\n"
-            f"1. You MUST ONLY answer questions related to agriculture, cooperative societies, farming, and government schemes.\n"
-            f"2. If the user asks about celebrities, sports, or general knowledge outside agriculture, reply EXACTLY with: 'I am Sahakar Sahayak. I can only provide information regarding Indian Agricultural Cooperatives and Schemes. I cannot answer this query.'\n"
-            f"3. DOCUMENT CITATIONS: Even though answering in {language}, keep document names and page numbers in English.\n"
-        )
+    if not chunks:
+        print("❌ No readable text chunks found in PDFs.")
+        return
 
-        if context_block.strip():
-            full_prompt += (
-                f"4. Answer using ONLY the verified official text provided in the 'Context' below.\n"
-                f"5. If the answer cannot be found in Context, respond EXACTLY with: 'This information is not available in the official cooperative documents.'\n\n"
-                f"Context:\n{context_block}\n\n"
-                f"User Query: {query}"
-            )
-        else:
-            full_prompt += f"\nUser Query: {query}"
+    tokenized_corpus = [tokenize(chunk) for chunk in chunks]
+    bm25 = BM25Okapi(tokenized_corpus)
+    documents_metadata = metadata_list
 
-        generation_config = genai.types.GenerationConfig(temperature=0.0)
-        response = model.generate_content(full_prompt, generation_config=generation_config)
-        answer_text = response.text.strip() if response and response.text else "No response generated."
-        
-        if "I am Sahakar Sahayak" in answer_text or "not available in the official cooperative documents" in answer_text.lower():
-            sources = []
-            confidence = 0.0
-        else:
-            confidence = 0.95
+    os.makedirs(os.path.dirname(METADATA_PATH), exist_ok=True)
+    with open(METADATA_PATH, "w", encoding="utf-8") as f:
+        json.dump(documents_metadata, f, ensure_ascii=False)
 
-        return {
-            "answer": answer_text,
-            "language": language,
-            "intent": intent,
-            "sources": sources,
-            "confidence": confidence,
-            "action_url": None,
-            "qr_code_base64": None
-        }
+    print(f"✅ BM25 search index built successfully ({len(chunks)} chunks).")
 
-    except Exception:
-        # Fallback to keep sources intact even if online request fails
-        return {
-            "answer": "Official Scheme Document Retrieved.",
-            "language": language,
-            "intent": intent,
-            "sources": sources,
-            "confidence": 0.90 if sources else 0.0,
-            "action_url": None,
-            "qr_code_base64": None
-        }
+
+def retrieve_documents(query: str, top_k: int = 3, threshold: float = 0.0) -> list:
+    """Searches documents via BM25 matching without requiring any API keys."""
+    global bm25, documents_metadata
+    if bm25 is None or not documents_metadata:
+        build_or_load_index()
+
+    if bm25 is None or len(documents_metadata) == 0:
+        return []
+
+    tokenized_query = tokenize(query)
+    scores = bm25.get_scores(tokenized_query)
+
+    top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
+
+    results = []
+    for idx in top_indices:
+        if scores[idx] > threshold:
+            doc_data = documents_metadata[idx].copy()
+            doc_data["similarity_score"] = float(scores[idx])
+            results.append(doc_data)
+
+    return results
+
+
+try:
+    build_or_load_index()
+except Exception as e:
+    print(f"Retriever initialization warning: {e}")
