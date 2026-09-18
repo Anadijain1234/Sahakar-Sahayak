@@ -10,7 +10,7 @@ from backend.services.nlp_service import (
     validate_language
 )
 
-from backend.services.rag_service import get_answer
+from backend.services.rag_service import get_answer, normalize_query_to_english
 
 
 router = APIRouter()
@@ -21,31 +21,36 @@ def query(request: QueryRequest):
 
     try:
 
-        # 1. Validate language
+        # 1. Validate target output language selected from UI
         language = validate_language(request.language)
 
         # 2. Clean query
         cleaned_query = preprocess_query(request.query)
 
-        # 3. Detect intent
+        # 3. Normalize mixed speech (Kannada/Marathi/Hindi/English) to pure English
+        english_query = normalize_query_to_english(cleaned_query)
+
+        # 4. Detect intent using the normalized English query
         intent = detect_intent(
-            cleaned_query,
+            english_query,
             language
         )
 
-        print("Original Query:", request.query)
-        print("Cleaned Query :", cleaned_query)
-        print("Language      :", language)
-        print("Intent        :", intent)
+        print("Original Query :", request.query)
+        print("Cleaned Query  :", cleaned_query)
+        print("English Query  :", english_query)
+        print("Language (UI)  :", language)
+        print("Intent         :", intent)
 
-        # 4. Retrieve relevant document
+        # 5. Process query through RAG
+        # english_query ensures prompt comprehension, language dictates output script
         result = get_answer(
-            cleaned_query,
-            language,
-            intent
+            query=english_query,
+            language=language,
+            intent=intent
         )
 
-        # 5. Add NLP information
+        # 6. Add NLP metadata
         result["language"] = language
         result["intent"] = intent
 
