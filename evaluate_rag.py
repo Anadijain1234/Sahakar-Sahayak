@@ -1,6 +1,7 @@
 import json
 import time
 from backend.services.rag_service import get_answer
+from backend.services.retriever import retrieve_documents  # Added FAISS import
 
 # Load test cases
 test_cases = [
@@ -138,8 +139,12 @@ def run_benchmark():
         query = case["Question"]
         ground_truth = case["Ground Truth"]
 
-        # Invoke RAG service
-        rag_response = get_answer(query)
+        # 1. Fetch relevant PDF paragraphs from FAISS database
+        retrieved_docs = retrieve_documents(query, top_k=3)
+
+        # 2. Pass those PDF paragraphs to Gemini to get the final answer
+        rag_response = get_answer(query=query, retrieved_docs=retrieved_docs)
+        
         confidence = rag_response.get("confidence", 0.0)
         sources = rag_response.get("sources", [])
         retrieved_text = rag_response.get("answer", "")
