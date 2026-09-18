@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -81,7 +81,7 @@ app.include_router(auth_router, prefix="/auth", tags=["Authentication (Alias)"])
 # Voice Endpoints
 # ----------------------------------------------------
 @app.post("/voice/transcribe")
-async def transcribe_voice(file: UploadFile = File(...)):
+async def transcribe_voice(file: UploadFile = File(...), language: str = Form("en")):
     if convert_audio_to_text is None:
         raise HTTPException(
             status_code=503,
@@ -99,11 +99,12 @@ async def transcribe_voice(file: UploadFile = File(...)):
             temp_file.write(await file.read())
             temp_path = temp_file.name
 
-        text, language = convert_audio_to_text(temp_path)
+        # Pass the dynamic language from the frontend into the Voice Engine
+        text, detected_language = convert_audio_to_text(temp_path, language)
 
         return {
             "text": text,
-            "language": language
+            "language": detected_language
         }
 
     except Exception as e:
@@ -127,6 +128,7 @@ async def speak_voice(data: dict):
 
     try:
         text = data.get("text", "")
+        # Safely extracts the language chosen on the frontend UI
         language = data.get("language", "en")
 
         if not text.strip():
@@ -135,6 +137,7 @@ async def speak_voice(data: dict):
                 detail="Text cannot be empty"
             )
 
+        # Pass the dynamic language into the Voice Engine
         audio_base64 = convert_text_to_audio(
             text,
             language
