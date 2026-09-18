@@ -17,6 +17,10 @@ export const Chat = () => {
   const location = useLocation();
   const [activeChatId, setActiveChatId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // NEW: State to track if the AI voice is currently playing
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  
   const chatEndRef = useRef(null);
 
   // AUDIO
@@ -155,11 +159,21 @@ export const Chat = () => {
             }
             const audio = new Audio(`data:audio/mp3;base64,${ttsData.audio}`);
             audioRef.current = audio;
+            
+            // UPGRADED: Tell the UI that audio is starting
+            setIsPlayingAudio(true);
+            
+            // UPGRADED: Tell the UI when audio naturally finishes
+            audio.onended = () => {
+              setIsPlayingAudio(false);
+            };
+
             await audio.play();
             console.log("[TTS] Playing answer...");
           }
         } catch (ttsError) {
           console.error("[TTS] Error:", ttsError);
+          setIsPlayingAudio(false);
         }
       }
     } catch (err) {
@@ -180,7 +194,8 @@ export const Chat = () => {
 
   return (
     <LayoutWrapper title={t('askSahayak')}>
-      <div className="flex flex-col h-[calc(100vh-8.5rem)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
+      {/* Added 'relative' to this container so the stop button floats perfectly over the chat */}
+      <div className="flex flex-col relative h-[calc(100vh-8.5rem)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
         
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {messages.length === 0 ? (
@@ -220,7 +235,7 @@ export const Chat = () => {
                     conversationCategory={activeChat?.category || "General"}
                   />
                   
-                  {/* UPGRADED: HIGHLY VISIBLE GREEN CITATION & QR CODE BLOCK */}
+                  {/* HIGHLY VISIBLE GREEN CITATION & QR CODE BLOCK */}
                   {msg.sender === 'assistant' && (msg.sources?.length > 0 || msg.qr_code_base64) && (
                     <div className="flex flex-col items-start mt-3 sm:ml-12 pl-4 border-l-4 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10 p-4 rounded-r-lg shadow-sm">
                       
@@ -289,6 +304,24 @@ export const Chat = () => {
             </div>
           )}
         </div>
+
+        {/* BIG VISIBLE FLOATING STOP SPEAKING BUTTON */}
+        {isPlayingAudio && (
+          <div className="absolute bottom-[85px] w-full flex justify-center z-50 pointer-events-none">
+            <button
+              onClick={() => {
+                if (audioRef.current) {
+                  audioRef.current.pause();
+                  setIsPlayingAudio(false);
+                }
+              }}
+              className="pointer-events-auto flex items-center gap-3 bg-red-600 hover:bg-red-700 text-white text-sm font-extrabold px-6 py-3 rounded-full shadow-2xl border-2 border-white transition-all transform hover:scale-105"
+            >
+              <div className="w-3.5 h-3.5 bg-white rounded-sm animate-pulse"></div>
+              STOP SPEAKING
+            </button>
+          </div>
+        )}
 
         <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
       </div>
