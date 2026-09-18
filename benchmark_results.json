@@ -3,45 +3,45 @@
     "Test_ID": "T-01",
     "Scheme": "PMSKY",
     "Query": "What is the subsidy percentage for a small farmer installing micro irrigation",
-    "Confidence": 0.79,
-    "Hit": true,
-    "Source_Doc": "Revised_PDMC_Operational_Guidelines2023.pdf",
-    "Source_Page": 21,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "55% of indicative unit cost (General states: 60:40",
-    "Retrieved_Answer": "16 between 4.0x4.0m (₹41534) and 3.0x3.0m (₹47751) the cost would be:₹41534+[(₹47751-₹41534)/(4.0x4.0–3.0x3.0)X(4.0x4.0–..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-02",
     "Scheme": "PMSKY",
     "Query": "What is the lock in period before the same land parcel can re apply for micro irrigation support",
-    "Confidence": 0.79,
-    "Hit": true,
-    "Source_Doc": "Revised_PDMC_Operational_Guidelines2023.pdf",
-    "Source_Page": 11,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "Strictly once within a 7 year implementation period",
-    "Retrieved_Answer": "North East States, Himalayan States & UTs of Jammu Kashmir and Ladakh. 7.9 Assistance for installation of micro irrigati..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-03",
     "Scheme": "PMSKY",
     "Query": "What are the recorded cumulative farmers benefitted by PMSKY",
-    "Confidence": 0.82,
-    "Hit": true,
-    "Source_Doc": "PMKSY_Official_Operational_Guidelines.pdf",
-    "Source_Page": 1,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "Over 27 million farmers",
-    "Retrieved_Answer": "PRADHAN MANTRI KRISHI SINCHAYEE YOJANA (PMKSY) Operational Reference Document: 2021–2026 Extension Cycle Comprehensive F..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-04",
     "Scheme": "PMSKY",
     "Query": "What is the cost sharing pattern between the Central and state governments for NE and Himalayan states",
-    "Confidence": 0.79,
-    "Hit": true,
-    "Source_Doc": "Revised_PDMC_Operational_Guidelines2023.pdf",
-    "Source_Page": 6,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "90:10 funding ratio between central government and state government",
-    "Retrieved_Answer": "be monitored through web-portal of PDMC. Physical and Financial progress achieved during the preceding month is required..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-05",
@@ -52,138 +52,138 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "For general weather condition claims, insurance companies must receive the tentative final share of",
-    "Retrieved_Answer": "I could not find relevant information."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-06",
     "Scheme": "RWBCIS",
     "Query": "What specific state government subsidy release condition is required for insurance companies",
-    "Confidence": 0.78,
-    "Hit": true,
-    "Source_Doc": "doc1.pdf",
-    "Source_Page": 49,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "Insurance companies must have received the 1st installment, which is 50% of the applicable State",
-    "Retrieved_Answer": "www.pmfby.gov.in Operational Guidelines 2023 of PMFBY 49 seasons. However, the Insurance Companies may continue to raise..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-07",
     "Scheme": "KCC",
     "Query": "What is the maximum collateral free loan limit under the KCC scheme",
-    "Confidence": 0.82,
-    "Hit": true,
-    "Source_Doc": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
-    "Source_Page": 9,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "₹2,00,000 for standard ag/allied loans(upto ₹3,00,000 for tie up arrangements)",
-    "Retrieved_Answer": "9 Chapter III: General Instructions I. Rate of Interest 20. The rate of interest shall be as stipulated in Reserve Bank ..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-08",
     "Scheme": "KCC",
     "Query": "How are post harvest and asset maintenance expenses calculated in KCC crop limit",
-    "Confidence": 0.79,
-    "Hit": true,
-    "Source_Doc": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
-    "Source_Page": 15,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "10% of crop cost for post harvest +20% for asset maintenance",
-    "Retrieved_Answer": "15 • The above assessment is an illustration. The assessment of the KCC limit for allied activities will vary depending ..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-09",
     "Scheme": "KCC",
     "Query": "What is the flexi credit limit range available for marginal farmers under KCC",
-    "Confidence": 0.81,
-    "Hit": true,
-    "Source_Doc": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
-    "Source_Page": 6,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "₹10,000 to ₹50,000 as flexi KCC without linking directly to land value",
-    "Retrieved_Answer": "limit shall be rounded off to the nearest ₹1,000. (6) At the time of sanction, the maximum permissible limit (MPL) for t..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-10",
     "Scheme": "KCC",
     "Query": "What is the total tenure of the composite facility under the KCC scheme",
-    "Confidence": 0.79,
-    "Hit": true,
-    "Source_Doc": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
-    "Source_Page": 5,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "Six years",
-    "Retrieved_Answer": "5 (6) Crop insurance, accident insurance, health insurance and asset insurance; (7) Produce marketing loans; and (8) Inv..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-11",
     "Scheme": "KCC",
     "Query": "If a borrower avails a KCC loan for both crop cultivation and allied activities, how is the 10%",
-    "Confidence": 0.82,
-    "Hit": true,
-    "Source_Doc": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
-    "Source_Page": 7,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "The 10% consumption allowance is considered only once and is not calculated separately for each activity",
-    "Retrieved_Answer": "SLTC / DLTC. (3) In cases where a borrower avails credit for both crop cultivation and allied activities under the KCC f..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-12",
     "Scheme": "KCC",
     "Query": "How does the RBI KCC direction define \"Marginal Farmer\" vs \"Small Farmer\"",
-    "Confidence": 0.78,
-    "Hit": true,
-    "Source_Doc": "NAIS_SCHEME.pdf",
-    "Source_Page": 29,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "Marginal Farmer: Landholding upto 1 hectare. Small Farmer: Landholding >1 hectare and upto 2 hectare",
-    "Retrieved_Answer": "phased out in a period of three to five years, subject to review of the financial results and the response of the farmer..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-13",
     "Scheme": "PM-KISAN",
     "Query": "What is the annual financial benefit provided per eligible farmer's family under PM-KISAN",
-    "Confidence": 0.81,
-    "Hit": true,
-    "Source_Doc": "RevisedPM-KISANOperationalGuidelines(English).pdf",
-    "Source_Page": 2,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "₹6,000 per year released online directly into bank accounts via DBT in three equal installments of ₹2,000",
-    "Retrieved_Answer": "2 PRADHAN MANTRI KISAN SAMMAN NIDHI (PM-KISAN) SCHEME OPERATIONAL GUIDELINES 1. Scheme With a view to provide income sup..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-14",
     "Scheme": "PM-KISAN",
     "Query": "Are retired government employees drawing a monthly pension eligible for PM-KISAN benefits",
-    "Confidence": 0.82,
-    "Hit": true,
-    "Source_Doc": "RevisedPM-KISANOperationalGuidelines(English).pdf",
-    "Source_Page": 3,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "No, retired pensioners whose monthly pension is ₹10,000 or more are excluded.However Multi-tasking staff/Group D",
-    "Retrieved_Answer": "3 employees of the Local Bodies (Excluding Multi Tasking Staff / Class IV / Group D employees) iv) All superannuated / r..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-15",
     "Scheme": "PM-KISAN",
     "Query": "Is a person who purcahses cultivable land through a sale deed after 01.02.2019 eligible for PM_KISAN",
-    "Confidence": 0.81,
-    "Hit": true,
-    "Source_Doc": "RevisedPM-KISANOperationalGuidelines(English).pdf",
-    "Source_Page": 5,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "No, the transferee is not eligible because they were not landowner as of 01.02.2019",
-    "Retrieved_Answer": "5 iv) In case of transfer of cultivable land for reasons other than death after 01.02.2019, the officials have to reasse..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-16",
     "Scheme": "PMFBY",
     "Query": "What is the maximum claim payout limit and policy status when a farmer experiences prevented",
-    "Confidence": 0.78,
-    "Hit": true,
-    "Source_Doc": "aws_gui_cre.pdf",
-    "Source_Page": 63,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "Up to a maximum of 25% of the sum insured, after which the crop innsurance policy cover stands terminated for that",
-    "Retrieved_Answer": "National Crop Insurance Programme (NCIP) F. No 13015//02/2012-Credit-II Operational Guidelines 60 Payout 3 (Rs/Hectare) ..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   },
   {
     "Test_ID": "T-17",
     "Scheme": "PMFBY",
     "Query": "What is the eligible age range and benefit provided for personal accident coverage (sec 3) under UPIS",
-    "Confidence": 0.78,
-    "Hit": true,
-    "Source_Doc": "New Schemes-english_.pdf",
-    "Source_Page": 23,
+    "Confidence": 0.0,
+    "Hit": false,
+    "Source_Doc": "None",
+    "Source_Page": "N/A",
     "Ground_Truth": "Eligibility is 18 to 70 years. Provides ₹2 lakh for accidental death/permanent disability and ₹1 lakh for partial disability",
-    "Retrieved_Answer": "Termination of cover: The accident cover for the member shall terminate on any of the following events and no benefit wi..."
+    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
   }
 ]
