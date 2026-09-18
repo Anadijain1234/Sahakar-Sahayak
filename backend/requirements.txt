@@ -2,3 +2,4 @@ qrcode
 pillow
 qrcode
 pillow
+requests
