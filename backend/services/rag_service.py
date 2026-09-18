@@ -6,25 +6,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Initialize Sarvam AI Client
 try:
-    import google.generativeai as genai
-    api_key = os.getenv("GEMINI_API_KEY")
-    if api_key:
-        genai.configure(api_key=api_key)
-    
-    # Note: Updated to the correct active model name to prevent 404 errors.
-    model = genai.GenerativeModel('gemini-3.6-flash')
-except Exception:
-    genai = None
-    model = None
-
+    from sarvamai import SarvamAI
+    api_key = os.getenv("SARVAM_API_KEY")
+    client = SarvamAI(api_subscription_key=api_key) if api_key else None
+    MODEL_NAME = "sarvam-105b"
+except Exception as e:
+    print(f"Sarvam AI init warning: {e}")
+    client = None
+    MODEL_NAME = None
 
 def normalize_query_to_english(raw_query: str) -> str:
-    """
-    Translates mixed-language speech (Kannada, Marathi, Hindi, etc.) into clean English
-    for accurate FAISS vector database searching.
-    """
-    if model is None:
+    """Translates mixed-language speech into English via Sarvam AI."""
+    if client is None:
         return raw_query
         
     try:
@@ -35,13 +30,15 @@ def normalize_query_to_english(raw_query: str) -> str:
             "ONLY output the English translation, absolutely nothing else.\n\n"
             f"User Text: {raw_query}"
         )
-        generation_config = genai.types.GenerationConfig(temperature=0.0)
-        response = model.generate_content(prompt, generation_config=generation_config)
-        return response.text.strip()
+        response = client.chat.completions(
+            model=MODEL_NAME,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0
+        )
+        return response.choices[0].message.content.strip()
     except Exception as e:
         print(f"Translation Error: {e}")
         return raw_query
-
 
 def get_answer(
     query: str, 
@@ -67,10 +64,19 @@ def get_answer(
             context_block += f"\n--- Source: {doc_name} (Page {page_val if page_val is not None else 'N/A'}) ---\n{text_chunk}\n"
             
             if doc_name not in [s["document"] for s in sources]:
-                sources.append({"document": doc_name, "page": page_val})
+                # Automatically create a clickable URL for the frontend
+                link_url = f"/documents/{urllib.parse.quote(doc_name)}"
+                if page_val is not None:
+                    link_url += f"#page={page_val}"
+                
+                sources.append({
+                    "document": doc_name, 
+                    "page": page_val,
+                    "link": link_url
+                })
 
-    # 2. OFFLINE / LOCAL CODESPACE MODE (Allows evaluate_rag.py to pass without API key)
-    if model is None:
+    # 2. OFFLINE / LOCAL BENCHMARK MODE (Allows evaluate_rag.py to pass without API key)
+    if client is None:
         if sources:
             top_chunk = retrieved_docs[0].get("text", "") if retrieved_docs else ""
             answer_text = f"[Local Benchmark Mode] Found in PDF: {top_chunk[:300]}..."
@@ -89,7 +95,7 @@ def get_answer(
             "qr_code_base64": None
         }
 
-    # 3. ONLINE PRODUCTION MODE (Runs on Render with Gemini)
+    # 3. ONLINE PRODUCTION MODE (Runs on Render with Sarvam)
     try:
         lang_instructions = {
             "kn": "Please respond in Kannada (ಕನ್ನಡ).",
@@ -99,13 +105,12 @@ def get_answer(
         }
         instruction = lang_instructions.get(language, "Please respond in English.")
         
-        # AGGRESSIVE ANTI-HALLUCINATION PROMPT + CITATION ENFORCEMENT
         full_prompt = (
             f"You are Sahakar Sahayak, the official digital assistant for Indian Cooperative Societies.\n"
             f"{instruction}\n\n"
             f"CRITICAL RULES:\n"
             f"1. You MUST ONLY answer questions related to agriculture, cooperative societies, farming, and government schemes.\n"
-            f"2. If the user asks about celebrities (like Virat Kohli), sports, movies, or general knowledge outside agriculture, you MUST refuse to answer and reply EXACTLY with: 'I am Sahakar Sahayak. I can only provide information regarding Indian Agricultural Cooperatives and Schemes. I cannot answer this query.'\n"
+            f"2. If the user asks about celebrities, sports, movies, or general knowledge outside agriculture, you MUST refuse to answer and reply EXACTLY with: 'I am Sahakar Sahayak. I can only provide information regarding Indian Agricultural Cooperatives and Schemes. I cannot answer this query.'\n"
             f"3. DOCUMENT CITATIONS: Even though you are answering in {language}, you MUST keep the names of the source documents and page numbers exactly as they appear in English.\n"
         )
 
@@ -122,18 +127,20 @@ def get_answer(
                 f"User Query: {query}"
             )
 
-        generation_config = genai.types.GenerationConfig(temperature=0.0)
-        response = model.generate_content(full_prompt, generation_config=generation_config)
-        answer_text = response.text.strip() if response and response.text else "No response generated."
+        response = client.chat.completions(
+            model=MODEL_NAME,
+            messages=[{"role": "user", "content": full_prompt}],
+            temperature=0.0
+        )
         
-        # Determine confidence and strip citations if the AI refused to answer
+        answer_text = response.choices[0].message.content.strip() if response.choices else "No response generated."
+        
         if "I am Sahakar Sahayak" in answer_text or "not available in the official cooperative documents" in answer_text.lower():
             sources = []
             confidence = 0.0
         else:
             confidence = 0.95
 
-        # Fix QR text chopping: Expanded from 140 to 800 characters
         primary_source = sources[0]["document"] if sources else 'Official_Guidelines.pdf'
         sanitized_summary = answer_text[:800].replace("\n", " ")
         if len(answer_text) > 800:
@@ -176,7 +183,7 @@ def get_answer(
             "answer": f"AI Error: {str(e)}", 
             "language": language,
             "intent": intent,
-            "sources": sources, # Keep sources intact on failure
+            "sources": sources, 
             "confidence": 0.90 if sources else 0.0,
             "action_url": None, 
             "qr_code_base64": None
