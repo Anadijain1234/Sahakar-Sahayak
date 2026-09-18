@@ -12,10 +12,35 @@ try:
     if api_key:
         genai.configure(api_key=api_key)
     
-    model = genai.GenerativeModel('gemini-3.6-flash')
+    # Note: Updated to the correct active model name to prevent 404 errors.
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception:
     genai = None
     model = None
+
+
+def normalize_query_to_english(raw_query: str) -> str:
+    """
+    Translates mixed-language speech (Kannada, Marathi, Hindi, etc.) into clean English
+    for accurate FAISS vector database searching.
+    """
+    if model is None:
+        return raw_query
+        
+    try:
+        prompt = (
+            "You are a translation filter. The user has provided text that may contain a messy mix "
+            "of Kannada, Marathi, Nepali, Hindi, and English. Translate the core intent into "
+            "a single, clean English query for a database search. "
+            "ONLY output the English translation, absolutely nothing else.\n\n"
+            f"User Text: {raw_query}"
+        )
+        generation_config = genai.types.GenerationConfig(temperature=0.0)
+        response = model.generate_content(prompt, generation_config=generation_config)
+        return response.text.strip()
+    except Exception as e:
+        print(f"Translation Error: {e}")
+        return raw_query
 
 
 def get_answer(
@@ -63,25 +88,26 @@ def get_answer(
                 if doc_name not in [s["document"] for s in sources]:
                     sources.append({"document": doc_name, "page": page_val})
 
-        # AGGRESSIVE ANTI-HALLUCINATION PROMPT
+        # AGGRESSIVE ANTI-HALLUCINATION PROMPT + CITATION ENFORCEMENT
         full_prompt = (
             f"You are Sahakar Sahayak, the official digital assistant for Indian Cooperative Societies.\n"
             f"{instruction}\n\n"
             f"CRITICAL RULES:\n"
             f"1. You MUST ONLY answer questions related to agriculture, cooperative societies, farming, and government schemes.\n"
             f"2. If the user asks about celebrities (like Virat Kohli), sports, movies, or general knowledge outside agriculture, you MUST refuse to answer and reply EXACTLY with: 'I am Sahakar Sahayak. I can only provide information regarding Indian Agricultural Cooperatives and Schemes. I cannot answer this query.'\n"
+            f"3. DOCUMENT CITATIONS: Even though you are answering in {language}, you MUST keep the names of the source documents and page numbers exactly as they appear in English.\n"
         )
 
         if context_block.strip():
             full_prompt += (
-                f"3. Answer the user query using ONLY the verified official text provided in the 'Context' below.\n"
-                f"4. If the answer cannot be found completely in the Context, respond EXACTLY with: 'This information is not available in the official cooperative documents.'\n\n"
+                f"4. Answer the user query using ONLY the verified official text provided in the 'Context' below.\n"
+                f"5. If the answer cannot be found completely in the Context, respond EXACTLY with: 'This information is not available in the official cooperative documents.'\n\n"
                 f"Context:\n{context_block}\n\n"
                 f"User Query: {query}"
             )
         else:
             full_prompt += (
-                f"3. No official documents were retrieved for this query. If the query is a standard greeting (hello, hi), reply politely. Otherwise, state clearly that no official cooperative documents mention this topic.\n\n"
+                f"4. No official documents were retrieved for this query. If the query is a standard greeting (hello, hi), reply politely. Otherwise, state clearly that no official cooperative documents mention this topic.\n\n"
                 f"User Query: {query}"
             )
 
@@ -108,7 +134,6 @@ def get_answer(
         action_url = f"https://wa.me/?text={encoded_message}"
         
         qr_code_base64 = None
-        # Only generate a QR code if the AI actually provided a valid answer (not a refusal)
         if confidence > 0.0:
             try:
                 import qrcode
