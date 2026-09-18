@@ -53,3 +53,4 @@ SQLAlchemy
 PyJWT
 qrcode
 pillow
+sarvamai
