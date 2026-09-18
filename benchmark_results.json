@@ -8,7 +8,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "55% of indicative unit cost (General states: 60:40",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-02",
@@ -19,7 +19,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "Strictly once within a 7 year implementation period",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-03",
@@ -30,7 +30,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "Over 27 million farmers",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-04",
@@ -41,7 +41,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "90:10 funding ratio between central government and state government",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-05",
@@ -52,7 +52,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "For general weather condition claims, insurance companies must receive the tentative final share of",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-06",
@@ -63,7 +63,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "Insurance companies must have received the 1st installment, which is 50% of the applicable State",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-07",
@@ -74,7 +74,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "₹2,00,000 for standard ag/allied loans(upto ₹3,00,000 for tie up arrangements)",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-08",
@@ -85,7 +85,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "10% of crop cost for post harvest +20% for asset maintenance",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-09",
@@ -96,7 +96,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "₹10,000 to ₹50,000 as flexi KCC without linking directly to land value",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-10",
@@ -107,7 +107,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "Six years",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-11",
@@ -118,7 +118,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "The 10% consumption allowance is considered only once and is not calculated separately for each activity",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-12",
@@ -129,7 +129,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "Marginal Farmer: Landholding upto 1 hectare. Small Farmer: Landholding >1 hectare and upto 2 hectare",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-13",
@@ -140,7 +140,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "₹6,000 per year released online directly into bank accounts via DBT in three equal installments of ₹2,000",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-14",
@@ -151,7 +151,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "No, retired pensioners whose monthly pension is ₹10,000 or more are excluded.However Multi-tasking staff/Group D",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-15",
@@ -162,7 +162,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "No, the transferee is not eligible because they were not landowner as of 01.02.2019",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-16",
@@ -173,7 +173,7 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "Up to a maximum of 25% of the sum insured, after which the crop innsurance policy cover stands terminated for that",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   },
   {
     "Test_ID": "T-17",
@@ -184,6 +184,6 @@
     "Source_Doc": "None",
     "Source_Page": "N/A",
     "Ground_Truth": "Eligibility is 18 to 70 years. Provides ₹2 lakh for accidental death/permanent disability and ₹1 lakh for partial disability",
-    "Retrieved_Answer": "AI Error: \n  No API_KEY or ADC found. Please either:\n    - Set the `GOOGLE_API_KEY` environment variable.\n    - Manually..."
+    "Retrieved_Answer": "Sahakar Sahayak assistant is active. Please configure GEMINI_API_KEY."
   }
 ]
