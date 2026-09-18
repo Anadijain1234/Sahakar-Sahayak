@@ -12,9 +12,9 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-DOCS_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "documents")
-INDEX_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "faiss_index.bin")
-METADATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "metadata.json")
+DOCS_DIR = "/workspaces/Sahakar-Sahayak/backend/data/documents"
+INDEX_PATH = "/workspaces/Sahakar-Sahayak/backend/data/faiss_index.bin"
+METADATA_PATH = "/workspaces/Sahakar-Sahayak/backend/data/metadata.json"
 
 # In-memory storage for runtime speed
 index = None
