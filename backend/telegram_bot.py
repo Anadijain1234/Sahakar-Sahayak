@@ -6,13 +6,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-SARVAM_API_KEY = os.getenv("SARVAM_API_KEY")
 API_URL = os.getenv("API_URL", "https://sahakar-sahayak-4.onrender.com/query")
 
 if not BOT_TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN is missing from your environment variables!")
 
-print("🤖 Sahakar Sahayak Bot running with Interactive Menu...")
+print("🤖 Sahakar Sahayak Telegram Bot running with Interactive Menu...")
 last_update_id = 0
 user_languages = {}  # Map chat_id -> selected language code ('kn', 'en', 'hi')
 
@@ -64,7 +63,11 @@ while True:
                 cb_id = cb["id"]
 
                 try:
-                    requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/answerCallbackQuery", json={"callback_query_id": cb_id}, timeout=5)
+                    requests.post(
+                        f"https://api.telegram.org/bot{BOT_TOKEN}/answerCallbackQuery", 
+                        json={"callback_query_id": cb_id}, 
+                        timeout=5
+                    )
                 except Exception:
                     pass
 
@@ -115,6 +118,17 @@ while True:
                 try:
                     rag_res = requests.post(API_URL, json=rag_payload, timeout=25).json()
                     answer = rag_res.get("answer", "No response generated.")
+                    
+                    # Append source citations if retrieved by backend
+                    sources = rag_res.get("sources", [])
+                    if sources:
+                        citation_lines = []
+                        for s in sources:
+                            doc = s.get("document", "Document")
+                            page = s.get("page")
+                            citation_lines.append(f"• {doc}" + (f" (Page {page})" if page else ""))
+                        answer += "\n\n📚 **Sources:**\n" + "\n".join(citation_lines)
+
                 except Exception as req_err:
                     answer = "⚠️ Could not connect to backend server / ಬ್ಯಾಕೆಂಡ್ ಸರ್ವರ್ ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ."
                     print(f"Error calling backend: {req_err}")
@@ -122,11 +136,16 @@ while True:
                 try:
                     requests.post(
                         f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                        json={"chat_id": chat_id, "text": answer},
+                        json={"chat_id": chat_id, "text": answer, "parse_mode": "Markdown"},
                         timeout=10
                     )
                 except Exception as e:
-                    print(f"Error sending final message: {e}")
+                    # Fallback without markdown parsing in case text contains unescaped characters
+                    requests.post(
+                        f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                        json={"chat_id": chat_id, "text": answer},
+                        timeout=10
+                    )
 
     except Exception as e:
         print(f"Connection error, retrying... ({e})")
