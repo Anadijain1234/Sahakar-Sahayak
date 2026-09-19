@@ -3,7 +3,8 @@ import { useLanguage } from '../../context/AppContext';
 import { Send, Mic, Paperclip, X } from 'lucide-react';
 
 export const ChatInput = ({ onSend, isLoading }) => {
-  const { t } = useLanguage();
+  // FIX 1: Extracted `language` from context so we can send it to Bhashini
+  const { t, language } = useLanguage();
 
   const [text, setText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
@@ -34,16 +35,20 @@ export const ChatInput = ({ onSend, isLoading }) => {
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
 
-    if (!text.trim() && !attachedFile) return;
+    // FIX 2: Use textareaRef directly to prevent mobile keyboard dictation from cutting off the last word
+    const finalValue = textareaRef.current ? textareaRef.current.value : text;
+
+    if (!finalValue.trim() && !attachedFile) return;
     if (isLoading) return;
 
-    onSend(text, attachedFile);
+    onSend(finalValue, attachedFile, false);
 
     setText("");
     setAttachedFile(null);
 
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.value = "";
+      textareaRef.current.style.height = '36px'; // Force reset height
     }
   };
 
@@ -128,7 +133,7 @@ export const ChatInput = ({ onSend, isLoading }) => {
         try {
 
           // ------------------------------------------------
-          // SEND AUDIO TO WHISPER
+          // SEND AUDIO TO WHISPER/BHASHINI
           // ------------------------------------------------
 
           const formData = new FormData();
@@ -137,6 +142,12 @@ export const ChatInput = ({ onSend, isLoading }) => {
             "file",
             audioBlob,
             "voice.webm"
+          );
+
+          // FIX 3: Actually send the selected language (kn, hi, etc.) to the backend
+          formData.append(
+            "language",
+            language || "en"
           );
 
           console.log(
@@ -160,13 +171,13 @@ export const ChatInput = ({ onSend, isLoading }) => {
           }
 
           // ------------------------------------------------
-          // GET WHISPER RESULT
+          // GET BHASHINI RESULT
           // ------------------------------------------------
 
           const data = await response.json();
 
           console.log(
-            "[VOICE] Whisper response:",
+            "[VOICE] Engine response:",
             data
           );
 
@@ -183,12 +194,11 @@ export const ChatInput = ({ onSend, isLoading }) => {
               transcribedText
             );
 
-            // Show transcription in textbox briefly
-            setText(transcribedText);
-
-            // Automatically send to Chat.jsx
-            // true = this came from voice
+            // Automatically send to Chat.jsx (true = this came from voice, play audio back)
             onSend(transcribedText, null, true);
+            
+            // FIX 4: Instantly wipe text box clean so it doesn't get stuck
+            setText("");
           }
 
         } catch (error) {
