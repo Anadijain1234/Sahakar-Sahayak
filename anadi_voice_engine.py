@@ -5,7 +5,9 @@ import base64
 import requests
 from pydub import AudioSegment
 
-print("Loading Multilingual Voice Engine (Bhashini Primary + Google Fallback)...")
+print("=======================================================")
+print("🎙️ INITIATING VOICE ENGINE (BHASHINI + FALLBACK) 🎙️")
+print("=======================================================")
 
 BHASHINI_USER_ID = os.getenv("BHASHINI_USER_ID", "455ebbb51e-8be8-41c7-b1c4-97139e071887")
 BHASHINI_API_KEY = os.getenv("BHASHINI_API_KEY", "GNSK-fU7d1X0zBT20yFRch9YBUCeZ93goVEcN1LcC1cWND_oI2FGQLqjpv6g0nEM")
@@ -21,10 +23,7 @@ def get_google_lang_code(lang_code):
     return mapping.get(lang_code, "en-IN")
 
 def convert_audio_to_text(audio_file_path, lang_code="en"):
-    """
-    Takes audio, converts to text. 
-    Automatically switches language dynamically based on the frontend dropdown.
-    """
+    print(f"\n[BHASHINI LOG] 🔄 Starting ASR for language: {lang_code}")
     recognizer = sr.Recognizer()
     wav_path = "temp_converted.wav"
     safe_lang = lang_code if lang_code in ["en", "hi", "kn"] else "en"
@@ -36,6 +35,7 @@ def convert_audio_to_text(audio_file_path, lang_code="en"):
         
         # --- 1. ATTEMPT BHASHINI ASR FIRST ---
         try:
+            print("[BHASHINI LOG] 📡 Sending audio payload to Bhashini API...")
             with open(wav_path, "rb") as f:
                 audio_base64 = base64.b64encode(f.read()).decode("utf-8")
             
@@ -49,21 +49,30 @@ def convert_audio_to_text(audio_file_path, lang_code="en"):
             }
             
             response = requests.post(BHASHINI_URL, headers=headers, json=payload, timeout=8)
+            
             if response.status_code == 200:
                 data = response.json()
                 bhashini_text = data["pipelineResponse"][0]["output"][0]["source"]
+                print(f"[BHASHINI LOG] ✅ SUCCESS: {bhashini_text}")
                 if os.path.exists(wav_path): os.remove(wav_path)
                 return bhashini_text, safe_lang
+            else:
+                # FIX: We now violently print the exact reason Bhashini rejected it
+                print(f"[BHASHINI LOG] ❌ REJECTED! HTTP Status: {response.status_code}")
+                print(f"[BHASHINI LOG] ❌ EXACT ERROR FROM SERVER: {response.text}")
+                raise Exception(f"Bhashini API Rejected: {response.status_code}")
+                
         except Exception as e:
-            print("Bhashini ASR fallback triggered:", str(e))
+            print(f"[BHASHINI LOG] ⚠️ FALLBACK TRIGGERED: {str(e)}")
+            print("[GOOGLE LOG] 🟡 Switching to Google STT...")
             pass 
         
-        # --- 2. GOOGLE FALLBACK (Dynamically matches language!) ---
+        # --- 2. GOOGLE FALLBACK ---
         with sr.AudioFile(wav_path) as source:
             audio_data = recognizer.record(source)
             
-        # Dynamically passes en-IN, hi-IN, or kn-IN based on your UI selection
         text = recognizer.recognize_google(audio_data, language=google_lang)
+        print(f"[GOOGLE LOG] ✅ SUCCESS: '{text}'")
         
         if os.path.exists(wav_path):
             os.remove(wav_path)
@@ -72,6 +81,7 @@ def convert_audio_to_text(audio_file_path, lang_code="en"):
         
     except sr.UnknownValueError:
         if os.path.exists(wav_path): os.remove(wav_path)
+        print("[GOOGLE LOG] ❌ Audio unclear / Background noise")
         error_msg = {
             "en": "Sorry, I could not understand the audio.",
             "hi": "मुझे आपकी आवाज़ साफ़ सुनाई नहीं दी।",
@@ -80,13 +90,12 @@ def convert_audio_to_text(audio_file_path, lang_code="en"):
         return error_msg.get(safe_lang, "Audio unclear"), safe_lang
     except Exception as e:
         if os.path.exists(wav_path): os.remove(wav_path)
+        print(f"[VOICE ENGINE ERROR] ❌ {str(e)}")
         return f"STT Error: {str(e)}", safe_lang
 
 
 def convert_text_to_audio(text_string, lang_code="en"):
-    """
-    Converts LLM text back to spoken audio in the correct language.
-    """
+    print(f"\n[BHASHINI LOG] 🔄 Starting TTS for language: {lang_code}")
     try:
         safe_lang = lang_code if lang_code in ["en", "hi", "kn"] else "en"
         
@@ -102,15 +111,24 @@ def convert_text_to_audio(text_string, lang_code="en"):
             }
             
             response = requests.post(BHASHINI_URL, headers=headers, json=payload, timeout=8)
+            
             if response.status_code == 200:
                 data = response.json()
                 bhashini_audio_base64 = data["pipelineResponse"][0]["audio"][0]["audioContent"]
+                print("[BHASHINI LOG] ✅ TTS SUCCESS")
                 return bhashini_audio_base64
+            else:
+                # FIX: Catch TTS silent failures too
+                print(f"[BHASHINI LOG] ❌ TTS REJECTED! HTTP Status: {response.status_code}")
+                print(f"[BHASHINI LOG] ❌ EXACT ERROR FROM SERVER: {response.text}")
+                raise Exception(f"Bhashini TTS Rejected: {response.status_code}")
+                
         except Exception as e:
-            print("Bhashini TTS fallback triggered:", str(e))
+            print(f"[BHASHINI LOG] ⚠️ TTS FALLBACK TRIGGERED: {str(e)}")
+            print("[GOOGLE LOG] 🟡 Switching to Google TTS...")
             pass
         
-        # --- 2. GOOGLE FALLBACK (Dynamically matches language!) ---
+        # --- 2. GOOGLE FALLBACK ---
         tts = gTTS(text=text_string, lang=safe_lang, slow=False)
         temp_filename = "server_response.mp3"
         tts.save(temp_filename)
@@ -121,8 +139,9 @@ def convert_text_to_audio(text_string, lang_code="en"):
         if os.path.exists(temp_filename):
             os.remove(temp_filename)
             
+        print("[GOOGLE LOG] ✅ TTS SUCCESS")
         return encoded_audio
         
     except Exception as e:
-        print(f"TTS Error: {str(e)}")
+        print(f"[VOICE ENGINE ERROR] ❌ TTS Failed: {str(e)}")
         return None
