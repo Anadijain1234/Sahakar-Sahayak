@@ -16,7 +16,6 @@ try:
     api_key = os.getenv("SARVAM_API_KEY", "").strip()
     client = SarvamAI(api_subscription_key=api_key) if api_key else None
     
-    # Restored to the correct flagship model
     MODEL_NAME = "sarvam-105b"
     if client:
         print(f"[SARVAM LOG] ✅ Engine Online: Model '{MODEL_NAME}' connected.")
@@ -64,8 +63,12 @@ def normalize_query_to_english(raw_query: str) -> str:
         message_obj = response.choices[0].message if response.choices else None
         raw_content = getattr(message_obj, 'content', '') or ""
         
-        # Regex safety net to strip leaked <think> tags from keywords
-        clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
+        # BRUTAL EXTRACTION: If closing tag exists, take ONLY what comes after it
+        if "</think>" in raw_content:
+            clean_content = raw_content.split("</think>")[-1].strip()
+        else:
+            clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
+            
         cleaned_search_terms = clean_content if clean_content else _apply_lexicon_fallback(raw_query)
 
         lexicon_boost = _apply_lexicon_fallback(raw_query)
@@ -146,7 +149,6 @@ def get_answer(
     }
     target_lang_instruction = lang_instructions.get(language, "Respond in clear English.")
 
-    # Aggressive prompt engineering to force direct answers without thinking blocks
     master_prompt = (
         "You are Sahakar Sahayak, an official, empathetic digital assistant for Indian farmers.\n"
         f"{target_lang_instruction}\n\n"
@@ -181,8 +183,12 @@ def get_answer(
             print(f"[SARVAM LOG] 🔍 Final output length: {len(raw_content)}")
             
             if raw_content.strip():
-                # Final safety net: physically remove any leaked <think> tags from the output string
-                clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
+                # BRUTAL EXTRACTION: Chop the string in half if </think> exists
+                if "</think>" in raw_content:
+                    clean_content = raw_content.split("</think>")[-1].strip()
+                else:
+                    clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
+                
                 answer_text = clean_content if clean_content else raw_content.strip()
             else:
                 answer_text = "I apologize, but I could not synthesize an answer at this moment. Please try asking again."
