@@ -47,7 +47,11 @@ def normalize_query_to_english(raw_query: str) -> str:
             model=MODEL_NAME,
             messages=[{"role": "user", "content": prompt}]
         )
-        translated_text = response.choices[0].message.content.strip()
+        
+        # FIX 1: Safe extraction to prevent NoneType crash during translation
+        raw_content = response.choices[0].message.content if response.choices else None
+        translated_text = raw_content.strip() if raw_content else raw_query
+        
         print(f"[SARVAM LOG] ✅ Translation successful: '{translated_text}'")
         return translated_text
     except Exception as e:
@@ -136,7 +140,10 @@ def get_answer(
             messages=[{"role": "user", "content": full_prompt}]
         )
         
-        answer_text = response.choices[0].message.content.strip() if response.choices else "No response generated."
+        # FIX 2: Safe extraction to prevent NoneType crash during final answer generation
+        raw_content = response.choices[0].message.content if response.choices else None
+        answer_text = raw_content.strip() if raw_content else "This information is not available in the official cooperative documents."
+        
         print("[SARVAM LOG] ✅ Answer generated successfully.")
         
         if "I am Sahakar Sahayak" in answer_text or "not available in the official cooperative documents" in answer_text.lower():
