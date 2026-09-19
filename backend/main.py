@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+from pydantic import BaseModel  # ADDED: For strict TTS payload validation
 
 import tempfile
 import os
@@ -109,8 +110,13 @@ async def transcribe_voice(file: UploadFile = File(...), language: str = Form("e
             os.remove(temp_path)
 
 
+# ADDED: Pydantic Model to perfectly catch the React JSON payload
+class TTSRequest(BaseModel):
+    text: str
+    language: str = "en"
+
 @app.post("/voice/speak")
-async def speak_voice(data: dict):
+async def speak_voice(request: TTSRequest):
     if convert_text_to_audio is None:
         raise HTTPException(
             status_code=503,
@@ -118,9 +124,8 @@ async def speak_voice(data: dict):
         )
 
     try:
-        text = data.get("text", "")
-        # Safely extracts the language chosen on the frontend UI
-        language = data.get("language", "en")
+        text = request.text
+        language = request.language
 
         if not text.strip():
             raise HTTPException(
@@ -128,7 +133,7 @@ async def speak_voice(data: dict):
                 detail="Text cannot be empty"
             )
 
-        # Pass the dynamic language into the Voice Engine
+        # Pass the dynamic language into the Voice Engine (Logs will auto-generate here)
         audio_base64 = convert_text_to_audio(
             text,
             language
@@ -137,7 +142,7 @@ async def speak_voice(data: dict):
         if not audio_base64:
             raise HTTPException(
                 status_code=500,
-                detail="TTS failed"
+                detail="TTS failed across all fallback tiers"
             )
 
         return {
