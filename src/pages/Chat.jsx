@@ -8,7 +8,8 @@ import { SuggestionChip } from '../components/chat/SuggestionChip';
 import { LoadingIndicator } from '../components/common/LoadingIndicator';
 import { chatService } from '../services/chatService';
 import { Logo } from '../components/common/Logo';
-import { MessageSquare, ArrowRight, CornerDownLeft, Sparkles, QrCode } from 'lucide-react';
+// Added Volume2 icon for the Read Aloud button
+import { MessageSquare, ArrowRight, CornerDownLeft, Sparkles, QrCode, Volume2 } from 'lucide-react';
 
 export const Chat = () => {
   const { t, language } = useLanguage();
@@ -18,15 +19,10 @@ export const Chat = () => {
   const [activeChatId, setActiveChatId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   
-  // NEW: State to track if the AI voice is currently playing
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  
   const chatEndRef = useRef(null);
-
-  // AUDIO
   const audioRef = useRef(null);
 
-  // SUGGESTION CHIPS
   const suggestionChips = [
     { label: "Cooperative Registration", category: "Registration" },
     { label: "Member Rights", category: "Membership" },
@@ -36,11 +32,9 @@ export const Chat = () => {
     { label: "Dispute Resolution", category: "Dispute Resolution" }
   ];
 
-  // ACTIVE CHAT
   const activeChat = chatHistory.find(c => c.id === activeChatId);
   const messages = activeChat ? activeChat.messages : [];
 
-  // SCROLL
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -49,7 +43,6 @@ export const Chat = () => {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  // LOCATION TRIGGERS
   useEffect(() => {
     if (location.state?.resumeChatId) {
       setActiveChatId(location.state.resumeChatId);
@@ -58,7 +51,46 @@ export const Chat = () => {
     }
   }, [location.state]);
 
-  // INITIAL QUERY
+  // NEW STANDALONE AUDIO FUNCTION: Can be triggered by button or voice chat
+  const playReadAloud = async (textToRead) => {
+    if (!textToRead) return;
+    setIsPlayingAudio(true);
+    try {
+      console.log("[TTS] Sending answer to /voice/speak...");
+      const ttsResponse = await fetch("https://sahakar-sahayak-4.onrender.com/voice/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: textToRead, language: language })
+      });
+
+      if (!ttsResponse.ok) {
+        const errorText = await ttsResponse.text();
+        throw new Error(`TTS failed: ${ttsResponse.status} ${errorText}`);
+      }
+
+      const ttsData = await ttsResponse.json();
+      console.log("[TTS] Audio received");
+
+      if (ttsData.audio) {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        const audio = new Audio(`data:audio/mp3;base64,${ttsData.audio}`);
+        audioRef.current = audio;
+        
+        audio.onended = () => {
+          setIsPlayingAudio(false);
+        };
+
+        await audio.play();
+      }
+    } catch (ttsError) {
+      console.error("[TTS] Error:", ttsError);
+      setIsPlayingAudio(false);
+    }
+  };
+
   const handleInitialQuery = async (queryText, category) => {
     setIsLoading(true);
     const userMsg = {
@@ -92,7 +124,6 @@ export const Chat = () => {
     }
   };
 
-  // SEND MESSAGE
   const handleSendMessage = async (text, file, isVoice = false) => {
     let chatId = activeChatId;
     const userMsgText = text || (file ? `Attached Document: ${file.name}` : "");
@@ -134,47 +165,9 @@ export const Chat = () => {
 
       addChatMessage(chatId, assistantMsg);
 
-      // TEXT TO SPEECH
+      // Trigger auto-play only if the user spoke to the bot
       if (isVoice && response.answer && response.answer.trim()) {
-        try {
-          console.log("[TTS] Sending answer to /voice/speak...");
-          const ttsResponse = await fetch("https://sahakar-sahayak-4.onrender.com/voice/speak", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: response.answer, language: language })
-          });
-
-          if (!ttsResponse.ok) {
-            const errorText = await ttsResponse.text();
-            throw new Error(`TTS failed: ${ttsResponse.status} ${errorText}`);
-          }
-
-          const ttsData = await ttsResponse.json();
-          console.log("[TTS] Audio received");
-
-          if (ttsData.audio) {
-            if (audioRef.current) {
-              audioRef.current.pause();
-              audioRef.current.currentTime = 0;
-            }
-            const audio = new Audio(`data:audio/mp3;base64,${ttsData.audio}`);
-            audioRef.current = audio;
-            
-            // UPGRADED: Tell the UI that audio is starting
-            setIsPlayingAudio(true);
-            
-            // UPGRADED: Tell the UI when audio naturally finishes
-            audio.onended = () => {
-              setIsPlayingAudio(false);
-            };
-
-            await audio.play();
-            console.log("[TTS] Playing answer...");
-          }
-        } catch (ttsError) {
-          console.error("[TTS] Error:", ttsError);
-          setIsPlayingAudio(false);
-        }
+        playReadAloud(response.answer);
       }
     } catch (err) {
       console.error("[CHAT] Error:", err);
@@ -194,7 +187,6 @@ export const Chat = () => {
 
   return (
     <LayoutWrapper title={t('askSahayak')}>
-      {/* Added 'relative' to this container so the stop button floats perfectly over the chat */}
       <div className="flex flex-col relative h-[calc(100vh-8.5rem)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
         
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
@@ -235,33 +227,47 @@ export const Chat = () => {
                     conversationCategory={activeChat?.category || "General"}
                   />
                   
-                  {/* HIGHLY VISIBLE GREEN CITATION & QR CODE BLOCK */}
-                  {msg.sender === 'assistant' && (msg.sources?.length > 0 || msg.qr_code_base64) && (
-                    <div className="flex flex-col items-start mt-3 sm:ml-12 pl-4 border-l-4 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10 p-4 rounded-r-lg shadow-sm">
+                  {msg.sender === 'assistant' && (
+                    <div className="flex flex-col items-start mt-3 sm:ml-12 pl-4">
                       
-                      {msg.sources && msg.sources.length > 0 && (
-                        <div className="mb-4">
-                          <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">
-                            Verified Official Source
-                          </p>
-                          <p className="text-sm text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-2">
-                            📄 {msg.sources[0].documentName} {msg.sources[0].provision ? `(${msg.sources[0].provision})` : ''}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {msg.qr_code_base64 && (
-                        <div className="mt-1 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center gap-2 shadow-sm">
-                          <p className="text-[12px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 uppercase tracking-wide">
-                            <QrCode className="h-4 w-4 text-emerald-600" />
-                            Scan for WhatsApp Receipt
-                          </p>
-                          {/* bg-white p-1 ensures QR code always scans, even in Dark Mode */}
-                          <img 
-                            src={`data:image/png;base64,${msg.qr_code_base64}`} 
-                            alt="WhatsApp QR Code" 
-                            className="w-36 h-36 rounded-lg shadow-sm border border-slate-200 bg-white p-1"
-                          />
+                      {/* NEW BUTTON: Read Aloud Trigger */}
+                      <button
+                        onClick={() => playReadAloud(msg.text)}
+                        disabled={isPlayingAudio}
+                        className="mb-3 flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-300 rounded-full text-xs font-bold transition-colors shadow-sm disabled:opacity-50"
+                      >
+                        <Volume2 className="h-3.5 w-3.5" />
+                        {isPlayingAudio ? "Playing Voice..." : "Read Aloud"}
+                      </button>
+
+                      {/* HIGHLY VISIBLE GREEN CITATION & QR CODE BLOCK */}
+                      {(msg.sources?.length > 0 || msg.qr_code_base64) && (
+                        <div className="border-l-4 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10 p-4 rounded-r-lg shadow-sm w-full max-w-sm">
+                          
+                          {msg.sources && msg.sources.length > 0 && (
+                            <div className="mb-4">
+                              <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">
+                                Verified Official Source
+                              </p>
+                              <p className="text-sm text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-2">
+                                📄 {msg.sources[0].documentName} {msg.sources[0].provision ? `(${msg.sources[0].provision})` : ''}
+                              </p>
+                            </div>
+                          )}
+                          
+                          {msg.qr_code_base64 && (
+                            <div className="mt-1 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center gap-2 shadow-sm">
+                              <p className="text-[12px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 uppercase tracking-wide">
+                                <QrCode className="h-4 w-4 text-emerald-600" />
+                                Scan for WhatsApp Receipt
+                              </p>
+                              <img 
+                                src={`data:image/png;base64,${msg.qr_code_base64}`} 
+                                alt="WhatsApp QR Code" 
+                                className="w-36 h-36 rounded-lg shadow-sm border border-slate-200 bg-white p-1"
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -305,7 +311,6 @@ export const Chat = () => {
           )}
         </div>
 
-        {/* BIG VISIBLE FLOATING STOP SPEAKING BUTTON */}
         {isPlayingAudio && (
           <div className="absolute bottom-[85px] w-full flex justify-center z-50 pointer-events-none">
             <button
