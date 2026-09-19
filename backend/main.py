@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
 import tempfile
@@ -9,14 +10,8 @@ from dotenv import load_dotenv
 # Load local .env files if present (safely ignored on Render)
 load_dotenv()
 
-# Safe import for Gemini
-try:
-    from sarvamai import SarvamAI
-    SARVAM_API_KEY = os.getenv("SARVAM_API_KEY")
-    if SARVAM_API_KEY:
-        genai.configure(api_key=SARVAM_API_KEY)
-except ImportError:
-    genai = None
+# Note: The broken genai/Sarvam config block has been completely removed.
+# LLM configuration is now handled safely inside backend/services/rag_service.py.
 
 # Safe import for voice engine
 try:
@@ -25,8 +20,12 @@ try:
         convert_text_to_audio
     )
 except ImportError:
-    convert_audio_to_text = None
-    convert_text_to_audio = None
+    try:
+        # Fallback in case your engine is inside the services folder
+        from backend.services.voice_engine import convert_audio_to_text, convert_text_to_audio
+    except ImportError:
+        convert_audio_to_text = None
+        convert_text_to_audio = None
 
 from backend.models.database import init_db
 from backend.routes.auth import router as auth_router
@@ -46,7 +45,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-
 # Allow requests from the React/Vite frontend
 app.add_middleware(
     CORSMiddleware,
@@ -55,6 +53,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# MOUNT DOCUMENTS FOLDER SO PDF CITATION LINKS ACTUALLY OPEN
+try:
+    os.makedirs("backend/data/documents", exist_ok=True)
+    app.mount("/documents", StaticFiles(directory="backend/data/documents"), name="documents")
+except Exception as e:
+    print(f"Could not mount documents directory: {e}")
 
 
 @app.get("/")
