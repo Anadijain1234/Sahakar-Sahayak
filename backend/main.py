@@ -10,9 +10,8 @@ from dotenv import load_dotenv
 # Load local .env files if present (safely ignored on Render)
 load_dotenv()
 
-# STRICT IMPORT: We removed the try/except block. 
-# This forces the server to use your new Bhashini file and stops it from hiding errors.
-from backend.services.voice_engine import convert_audio_to_text, convert_text_to_audio
+# STRICT IMPORT: Pointing exactly to the root file shown in your file explorer
+from anadi_voice_engine import convert_audio_to_text, convert_text_to_audio
 
 from backend.models.database import init_db
 from backend.routes.auth import router as auth_router
