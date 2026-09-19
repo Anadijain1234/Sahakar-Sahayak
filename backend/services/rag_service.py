@@ -6,22 +6,35 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Initialize Sarvam AI Client
+print("=======================================================")
+print("🧠 SARVAM AI ENGINE INITIALIZING 🧠")
+print("=======================================================")
+
+# Initialize Sarvam AI Client safely
 try:
     from sarvamai import SarvamAI
-    api_key = os.getenv("SARVAM_API_KEY")
+    # .strip() automatically removes any accidental hidden spaces you might have pasted
+    api_key = os.getenv("SARVAM_API_KEY", "").strip()
+    
+    if not api_key:
+        print("[SARVAM LOG] ❌ WARNING: SARVAM_API_KEY is completely missing from Render Environment Variables!")
+        
     client = SarvamAI(api_subscription_key=api_key) if api_key else None
     MODEL_NAME = "sarvam-105b"
+    if client:
+        print(f"[SARVAM LOG] ✅ SDK Loaded successfully. Model set to {MODEL_NAME}")
 except Exception as e:
-    print(f"Sarvam AI init warning: {e}")
+    print(f"[SARVAM LOG] ❌ FATAL INIT ERROR: {e}")
     client = None
     MODEL_NAME = None
 
 def normalize_query_to_english(raw_query: str) -> str:
     """Translates mixed-language speech into English via Sarvam AI."""
     if client is None:
+        print("[SARVAM LOG] ⚠️ Skipping translation: No API Key found.")
         return raw_query
         
+    print(f"\n[SARVAM LOG] 🔄 Translating query: '{raw_query}'")
     try:
         prompt = (
             "You are a translation filter. The user has provided text that may contain a messy mix "
@@ -32,12 +45,13 @@ def normalize_query_to_english(raw_query: str) -> str:
         )
         response = client.chat.completions(
             model=MODEL_NAME,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0
+            messages=[{"role": "user", "content": prompt}]
         )
-        return response.choices[0].message.content.strip()
+        translated_text = response.choices[0].message.content.strip()
+        print(f"[SARVAM LOG] ✅ Translation successful: '{translated_text}'")
+        return translated_text
     except Exception as e:
-        print(f"Translation Error: {e}")
+        print(f"[SARVAM LOG] ❌ Translation Failed: {str(e)}")
         return raw_query
 
 def get_answer(
@@ -49,7 +63,6 @@ def get_answer(
     context_block = ""
     sources = []
     
-    # 1. ALWAYS extract document sources first so they are never lost
     if retrieved_docs:
         for doc in retrieved_docs:
             doc_name = doc.get("document", doc.get("source_doc", "Unknown_Document.pdf"))
@@ -64,7 +77,6 @@ def get_answer(
             context_block += f"\n--- Source: {doc_name} (Page {page_val if page_val is not None else 'N/A'}) ---\n{text_chunk}\n"
             
             if doc_name not in [s["document"] for s in sources]:
-                # Automatically create a clickable URL for the frontend
                 link_url = f"/documents/{urllib.parse.quote(doc_name)}"
                 if page_val is not None:
                     link_url += f"#page={page_val}"
@@ -75,28 +87,20 @@ def get_answer(
                     "link": link_url
                 })
 
-    # 2. OFFLINE / LOCAL BENCHMARK MODE (Allows evaluate_rag.py to pass without API key)
     if client is None:
-        if sources:
-            top_chunk = retrieved_docs[0].get("text", "") if retrieved_docs else ""
-            answer_text = f"[Local Benchmark Mode] Found in PDF: {top_chunk[:300]}..."
-            confidence = 0.95
-        else:
-            answer_text = "This information is not available in the official cooperative documents."
-            confidence = 0.0
-
+        print("[SARVAM LOG] ❌ API call blocked: client is None. Missing API Key.")
         return {
-            "answer": answer_text,
+            "answer": "AI Error: SARVAM_API_KEY is missing from the server.",
             "language": language,
             "intent": intent,
             "sources": sources,
-            "confidence": confidence,
+            "confidence": 0.0,
             "action_url": None,
             "qr_code_base64": None
         }
 
-    # 3. ONLINE PRODUCTION MODE (Runs on Render with Sarvam)
     try:
+        print(f"\n[SARVAM LOG] 🧠 Generating answer for query: '{query}'")
         lang_instructions = {
             "kn": "Please respond in Kannada (ಕನ್ನಡ).",
             "hi": "Please respond in Hindi (हिंदी).",
@@ -129,11 +133,11 @@ def get_answer(
 
         response = client.chat.completions(
             model=MODEL_NAME,
-            messages=[{"role": "user", "content": full_prompt}],
-            temperature=0.0
+            messages=[{"role": "user", "content": full_prompt}]
         )
         
         answer_text = response.choices[0].message.content.strip() if response.choices else "No response generated."
+        print("[SARVAM LOG] ✅ Answer generated successfully.")
         
         if "I am Sahakar Sahayak" in answer_text or "not available in the official cooperative documents" in answer_text.lower():
             sources = []
@@ -179,6 +183,7 @@ def get_answer(
         }
 
     except Exception as e:
+        print(f"[SARVAM LOG] ❌ Generation Failed: {str(e)}")
         return {
             "answer": f"AI Error: {str(e)}", 
             "language": language,
