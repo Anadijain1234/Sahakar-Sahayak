@@ -74,7 +74,7 @@ def convert_audio_to_text(audio_file_path, lang_code="en"):
     try:
         headers = {
             "Authorization": BHASHINI_API_KEY,
-            "userID": BHASHINI_USER_ID,  # INJECTED TO ENSURE STRICT AUTHENTICATION
+            "userID": BHASHINI_USER_ID,
             "Content-Type": "application/json"
         }
         with open(wav_path, "rb") as f:
@@ -140,11 +140,12 @@ def convert_text_to_audio(text_string, lang_code="en"):
     try:
         headers = {
             "Authorization": BHASHINI_API_KEY,
-            "userID": BHASHINI_USER_ID,  # INJECTED TO ENSURE STRICT AUTHENTICATION
+            "userID": BHASHINI_USER_ID,
             "Content-Type": "application/json"
         }
+        # Added explicit 'gender': 'female' parameter for persona consistency
         payload = {
-            "pipelineTasks": [{"taskType": "tts", "config": {"language": {"sourceLanguage": safe_lang}}}],
+            "pipelineTasks": [{"taskType": "tts", "config": {"language": {"sourceLanguage": safe_lang}, "gender": "female"}}],
             "inputData": {"input": [{"source": text_string}]}
         }
         response = requests.post(BHASHINI_URL, headers=headers, json=payload, timeout=10)
