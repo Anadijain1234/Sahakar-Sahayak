@@ -15,6 +15,8 @@ try:
     from sarvamai import SarvamAI
     api_key = os.getenv("SARVAM_API_KEY", "").strip()
     client = SarvamAI(api_subscription_key=api_key) if api_key else None
+    
+    # Restored to the correct flagship model
     MODEL_NAME = "sarvam-105b"
     if client:
         print(f"[SARVAM LOG] ✅ Engine Online: Model '{MODEL_NAME}' connected.")
@@ -49,7 +51,7 @@ def normalize_query_to_english(raw_query: str) -> str:
             "(e.g., 'kishan' -> 'PM-KISAN', 'bima' -> 'PMFBY') to official acronyms.\n"
             "Output a space-separated list of clean English search keywords optimized for BM25.\n"
             "If the query is completely unrelated to agriculture, output 'OUT_OF_DOMAIN'.\n"
-            "OUTPUT ONLY THE KEYWORDS. No explanations.\n\n"
+            "CRITICAL INSTRUCTION: OUTPUT ONLY THE KEYWORDS. Do not output any thinking steps, reasoning, or explanations.\n\n"
             f"User Input: {raw_query}"
         )
 
@@ -62,7 +64,9 @@ def normalize_query_to_english(raw_query: str) -> str:
         message_obj = response.choices[0].message if response.choices else None
         raw_content = getattr(message_obj, 'content', '') or ""
         
-        cleaned_search_terms = raw_content.strip() if raw_content.strip() else _apply_lexicon_fallback(raw_query)
+        # Regex safety net to strip leaked <think> tags from keywords
+        clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
+        cleaned_search_terms = clean_content if clean_content else _apply_lexicon_fallback(raw_query)
 
         lexicon_boost = _apply_lexicon_fallback(raw_query)
         final_search_query = f"{cleaned_search_terms} {lexicon_boost}".strip()
@@ -142,7 +146,7 @@ def get_answer(
     }
     target_lang_instruction = lang_instructions.get(language, "Respond in clear English.")
 
-    # Simplified, less aggressive prompt to avoid safety filter triggers
+    # Aggressive prompt engineering to force direct answers without thinking blocks
     master_prompt = (
         "You are Sahakar Sahayak, an official, empathetic digital assistant for Indian farmers.\n"
         f"{target_lang_instruction}\n\n"
@@ -152,9 +156,13 @@ def get_answer(
         "2. If Context is provided below, ground your answer directly in those facts and cite the document names.\n"
         "3. If Context is missing or empty, use your general knowledge of Indian agriculture to help the farmer. "
         "Mention politely that you are providing general guidance.\n\n"
+        "CRITICAL INSTRUCTION FOR AI:\n"
+        "- DO NOT output any internal thinking steps, reasoning, or <think> blocks.\n"
+        "- Start your response DIRECTLY with the final answer meant for the farmer.\n"
+        "- Ensure the output is concise enough for Text-to-Speech (TTS) processing.\n\n"
         f"Context:\n{context_block if context_block else 'None'}\n\n"
         f"Farmer Query: {query}\n\n"
-        "Provide a helpful, direct, and structured response:"
+        "Final Answer:"
     )
 
     try:
@@ -168,19 +176,14 @@ def get_answer(
 
         message_obj = response.choices[0].message if response.choices else None
         
-        # Safe extraction of both standard content and reasoning blocks
         if message_obj:
-            content = getattr(message_obj, 'content', '') or ""
-            reasoning = getattr(message_obj, 'reasoning_content', '') or ""
+            raw_content = getattr(message_obj, 'content', '') or ""
+            print(f"[SARVAM LOG] 🔍 Final output length: {len(raw_content)}")
             
-            print(f"[SARVAM LOG] 🔍 Content output length: {len(content)}")
-            print(f"[SARVAM LOG] 🧠 Reasoning output length: {len(reasoning)}")
-            
-            if content.strip():
-                answer_text = content.strip()
-            elif reasoning.strip():
-                print("[SARVAM LOG] ⚠️ Model hid answer in reasoning block. Extracting...")
-                answer_text = reasoning.strip()
+            if raw_content.strip():
+                # Final safety net: physically remove any leaked <think> tags from the output string
+                clean_content = re.sub(r'<think>.*?</think>', '', raw_content, flags=re.DOTALL).strip()
+                answer_text = clean_content if clean_content else raw_content.strip()
             else:
                 answer_text = "I apologize, but I could not synthesize an answer at this moment. Please try asking again."
         else:
