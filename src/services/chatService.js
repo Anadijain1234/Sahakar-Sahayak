@@ -41,6 +41,7 @@ export const chatService = {
         })),
         suggestedQuestions: [],
         confidence: data.confidence,
+        answer_source: data.answer_source || null,
         intent: data.intent,
         language: data.language,
         action_url: data.action_url || null,

@@ -165,6 +165,7 @@ def get_answer(
     sources = []
     context_chunks = []
     seen_texts = set()
+    best_score = 0.0   # real 0-1 match score of the best PDF piece (from retriever.py)
 
     if retrieved_docs:
         for doc in retrieved_docs:
@@ -181,6 +182,12 @@ def get_answer(
             except (ValueError, TypeError):
                 page_val = None
 
+            try:
+                piece_score = float(doc.get("similarity_score", 0.0))
+            except (ValueError, TypeError):
+                piece_score = 0.0
+            best_score = max(best_score, min(piece_score, 1.0))
+
             context_chunks.append(
                 f"[Document: {doc_name} | Page: {page_val if page_val is not None else 'General'}]\n{text_chunk}"
             )
@@ -195,6 +202,7 @@ def get_answer(
                     "document": doc_name,
                     "page": page_val,
                     "link": link_url,
+                    "score": round(piece_score, 2),
                 })
 
     context_block = "\n\n---\n\n".join(context_chunks[:6])
@@ -206,6 +214,7 @@ def get_answer(
             "intent": intent,
             "sources": sources,
             "confidence": 0.0,
+            "answer_source": "error",
             "action_url": None,
             "qr_code_base64": None,
         }
@@ -263,6 +272,7 @@ def get_answer(
             "intent": intent,
             "sources": [],
             "confidence": 0.0,
+            "answer_source": "error",
             "action_url": None,
             "qr_code_base64": None,
         }
@@ -273,14 +283,21 @@ def get_answer(
     is_refusal = "can only assist with" in answer_text.lower() or "out_of_domain" in answer_text.lower()
     has_documents = used_context and len(sources) > 0
 
+    # Honest confidence (0-1) shown to the user:
+    #   refused (off-topic)      -> 0
+    #   answered from the PDFs   -> the real match score of the best PDF piece
+    #   Sarvam general knowledge -> 0.5 (not checked against an official document)
     if is_refusal:
         sources = []
         confidence = 0.0
+        answer_source = "refused"
     elif has_documents:
-        confidence = 0.98
+        confidence = round(best_score, 2) if best_score > 0 else 0.6
+        answer_source = "documents"
     else:
         sources = []
-        confidence = 0.85
+        confidence = 0.5
+        answer_source = "general"
 
     action_url, qr_code_base64 = _generate_share_qr(query, answer_text, sources, confidence)
 
@@ -290,6 +307,7 @@ def get_answer(
         "intent": intent,
         "sources": sources,
         "confidence": confidence,
+        "answer_source": answer_source,
         "action_url": action_url,
         "qr_code_base64": qr_code_base64,
     }

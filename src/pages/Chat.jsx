@@ -114,7 +114,9 @@ export const Chat = () => {
         sources: response.sources,
         suggestedQuestions: response.suggestedQuestions,
         action_url: response.action_url,
-        qr_code_base64: response.qr_code_base64
+        qr_code_base64: response.qr_code_base64,
+        confidence: response.confidence,
+        answer_source: response.answer_source
       };
       addChatMessage(chatId, assistantMsg);
     } catch (err) {
@@ -160,7 +162,9 @@ export const Chat = () => {
         sources: response.sources,
         suggestedQuestions: response.suggestedQuestions,
         action_url: response.action_url,
-        qr_code_base64: response.qr_code_base64
+        qr_code_base64: response.qr_code_base64,
+        confidence: response.confidence,
+        answer_source: response.answer_source
       };
 
       addChatMessage(chatId, assistantMsg);
@@ -239,6 +243,18 @@ export const Chat = () => {
                         <Volume2 className="h-3.5 w-3.5" />
                         {isPlayingAudio ? "Playing Voice..." : "Read Aloud"}
                       </button>
+
+                      {/* HOW SURE WE ARE (real match score from the search) */}
+                      {msg.answer_source === 'documents' && typeof msg.confidence === 'number' && (
+                        <p className="mb-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                          ✅ Found in official documents · {Math.round(msg.confidence * 100)}% match
+                        </p>
+                      )}
+                      {msg.answer_source === 'general' && (
+                        <p className="mb-3 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                          ℹ️ General guidance, not from an official document. Please confirm with your cooperative office.
+                        </p>
+                      )}
 
                       {/* HIGHLY VISIBLE GREEN CITATION & QR CODE BLOCK */}
                       {(msg.sources?.length > 0 || msg.qr_code_base64) && (
