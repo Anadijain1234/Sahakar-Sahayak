@@ -70,17 +70,18 @@ A passage is only used if its keyword **or** meaning match is strong enough. If 
 
 `evaluate_rag.py` runs **26 test questions** (13 farmer-scheme, 8 cooperative-law, 2 mixed Kannada/Hindi + English, 3 off-topic) through the full pipeline — search **and** Sarvam's written answers. Every expected answer (document, page and key fact such as “72 hours” or “₹6,000”) was checked by hand against the official PDFs.
 
-Full test, 28 Sep 2026 (meaning search on):
+Full test, 2026-09-27 (meaning search on):
 
 | Metric | Result |
 |---|---|
-| Answer contains the correct fact | **91.30%** |
-| Correct official document among the passages given to the AI | **100%** |
-| Cooperative-law questions answered correctly | **100%** (8/8) |
-| Mixed-language questions understood and answered | **100%** (2/2) |
-| Off-topic questions refused | **100%** (3/3) |
-| Average response time | **1.85 s** |
-| **Overall (fact + correct source shown, or correct refusal)** | **21 / 26 (80.77%)** |
+| Answer contains the correct fact | **95.65%** |
+| Correct official document among the passages given to the AI | **100.00%** |
+| Correct official document ranked #1 | **100.00%** |
+| Cooperative-law questions answered correctly | **100.00%** |
+| Mixed-language questions understood and answered | **100.00%** |
+| Off-topic questions refused | **100.00%** |
+| Average response time | **1.82 s** |
+| **Overall (fact + correct source shown, or correct refusal)** | **25 / 26 (96.15%)** |
 
 The latest numbers are always in [`benchmark_report.md`](benchmark_report.md), which is regenerated on every run.
 
