@@ -9,6 +9,9 @@ export const SourceCard = ({ source, onView }) => {
     e.preventDefault();
     if (onView) {
       onView(source);
+    } else if (source.link) {
+      // Open the real PDF from the backend in a new tab
+      window.open(source.link, '_blank', 'noopener,noreferrer');
     } else if (source.id) {
       // Navigate to detailed resource page
       navigate(`/resources/${source.id}`);

@@ -249,9 +249,20 @@ export const Chat = () => {
                               <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">
                                 Verified Official Source
                               </p>
-                              <p className="text-sm text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-2">
-                                📄 {msg.sources[0].documentName} {msg.sources[0].provision ? `(${msg.sources[0].provision})` : ''}
-                              </p>
+                              {msg.sources[0].link ? (
+                                
+                                  href={msg.sources[0].link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-2 underline hover:text-emerald-900 dark:hover:text-emerald-100"
+                                >
+                                  📄 {msg.sources[0].documentName} {msg.sources[0].provision ? `(${msg.sources[0].provision})` : ''}
+                                </a>
+                              ) : (
+                                <p className="text-sm text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-2">
+                                  📄 {msg.sources[0].documentName} {msg.sources[0].provision ? `(${msg.sources[0].provision})` : ''}
+                                </p>
+                              )}
                             </div>
                           )}
                           
