@@ -203,6 +203,14 @@ export const LandingPage = () => {
           <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed max-w-2xl mx-auto">
             {t('chatDisclaimer')}
           </p>
+          <a
+            href={(import.meta.env.VITE_API_URL || "https://sahakar-sahayak-4.onrender.com").replace(/\/$/, "") + "/scoreboard"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            📊 Tested on 26 real questions from official documents: see our live accuracy scoreboard
+          </a>
           <div className="text-[10px] text-slate-450 dark:text-slate-650">
             &copy; {new Date().getFullYear()} Sahakar Sahayak. Platform developed for multilingual citizen support. All rights reserved.
           </div>

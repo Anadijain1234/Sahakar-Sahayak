@@ -128,6 +128,14 @@ export const LayoutWrapper = ({ children, title = "" }) => {
               <p className="text-[11px] lg:text-xs text-slate-400 dark:text-slate-500 leading-relaxed max-w-2xl mx-auto">
                 {t('chatDisclaimer')}
               </p>
+              <a
+                href={(import.meta.env.VITE_API_URL || "https://sahakar-sahayak-4.onrender.com").replace(/\/$/, "") + "/scoreboard"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 text-[11px] lg:text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline"
+              >
+                📊 Tested accuracy: see our live scoreboard
+              </a>
             </footer>
           </div>
         </main>

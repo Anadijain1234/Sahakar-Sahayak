@@ -105,8 +105,23 @@ export const AppProvider = ({ children }) => {
 
   // --- AUTH STATE ---
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    try {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) return JSON.parse(savedUser);
+      // Guest mode: rebuild the guest profile so a page refresh doesn't log the user out
+      if (localStorage.getItem('isGuest') === 'true') {
+        return {
+          name: "Guest User",
+          email: "guest@sahakarsahayak.gov.in",
+          phone: "0000000000",
+          userType: "Citizen",
+          preferredLanguage: localStorage.getItem('language') || 'en'
+        };
+      }
+    } catch (e) {
+      // ignore broken saved data
+    }
+    return null;
   });
   const [token, setToken] = useState(() => {
     return localStorage.getItem('token') || null;

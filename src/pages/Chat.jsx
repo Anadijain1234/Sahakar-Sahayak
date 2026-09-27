@@ -9,14 +9,20 @@ import { SuggestionChip } from '../components/chat/SuggestionChip';
 import { LoadingIndicator } from '../components/common/LoadingIndicator';
 import { chatService } from '../services/chatService';
 import { Logo } from '../components/common/Logo';
-import { ArrowRight, CornerDownLeft, Sparkles } from 'lucide-react';
+import { ArrowRight, CornerDownLeft, Sparkles, Plus } from 'lucide-react';
 
 export const Chat = () => {
   const { t, language } = useLanguage();
   const { isGuest } = useAuth();
   const { chatHistory, addChatMessage, createNewChat } = useAppData();
   const location = useLocation();
-  const [activeChatId, setActiveChatId] = useState(null);
+  // Remember the open conversation for this browser tab, so a refresh keeps you in it
+  const [activeChatId, setActiveChatId] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('activeChatId');
+      return saved && chatHistory.some(c => c.id === saved) ? saved : null;  // ignore deleted chats
+    } catch (e) { return null; }
+  });
   const [isLoading, setIsLoading] = useState(false);
   
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -34,6 +40,23 @@ export const Chat = () => {
 
   const activeChat = chatHistory.find(c => c.id === activeChatId);
   const messages = activeChat ? activeChat.messages : [];
+
+  useEffect(() => {
+    try {
+      if (activeChatId) sessionStorage.setItem('activeChatId', activeChatId);
+      else sessionStorage.removeItem('activeChatId');
+    } catch (e) {
+      // storage not available -- chat still works, it just won't survive a refresh
+    }
+  }, [activeChatId]);
+
+  const startNewChat = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlayingAudio(false);
+    }
+    setActiveChatId(null);
+  };
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -228,6 +251,15 @@ export const Chat = () => {
             </div>
           ) : (
             <div className="max-w-4xl mx-auto">
+              <div className="flex justify-end mb-3">
+                <button
+                  onClick={startNewChat}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  New chat
+                </button>
+              </div>
               {messages.map((msg, idx) => (
                 <div key={idx} className="mb-4">
                   <ChatMessage
