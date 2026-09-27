@@ -136,6 +136,9 @@ export const LayoutWrapper = ({ children, title = "" }) => {
               >
                 📊 Tested accuracy: see our live scoreboard
               </a>
+          <Link to="/admin" className="inline-block mt-2 ml-3 text-[11px] lg:text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline">
+            🔒 Admin insights
+          </Link>
             </footer>
           </div>
         </main>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   CheckCircle2, AlertCircle, Info, FileText, ExternalLink,
-  Volume2, Send, Search, ChevronDown, ChevronUp,
+  Volume2, Send, Search, ChevronDown, ChevronUp, Phone,
 } from 'lucide-react';
 
 // Short, farmer-friendly labels in the language chosen on the website.
@@ -15,6 +15,7 @@ const LABELS = {
     listen: 'Read aloud',
     playing: 'Playing…',
     share: 'Share',
+    help: 'Need more help? Talk to a person',
   },
   hi: {
     verified: 'आधिकारिक दस्तावेज़ से सत्यापित',
@@ -25,6 +26,7 @@ const LABELS = {
     listen: 'सुनें',
     playing: 'चल रहा है…',
     share: 'शेयर करें',
+    help: 'और मदद चाहिए? किसी व्यक्ति से बात करें',
   },
   kn: {
     verified: 'ಅಧಿಕೃತ ದಾಖಲೆಯಿಂದ ಪರಿಶೀಲಿಸಲಾಗಿದೆ',
@@ -35,7 +37,16 @@ const LABELS = {
     listen: 'ಕೇಳಿ',
     playing: 'ಪ್ಲೇ ಆಗುತ್ತಿದೆ…',
     share: 'ಹಂಚಿಕೊಳ್ಳಿ',
+    help: 'ಇನ್ನಷ್ಟು ಸಹಾಯ ಬೇಕೇ? ವ್ಯಕ್ತಿಯೊಂದಿಗೆ ಮಾತನಾಡಿ',
   },
+};
+
+// Which AI wrote the answer (Sarvam first, then backups -- see backend/services/llm_chain.py)
+const AI_NAMES = {
+  sarvam: 'Sarvam AI',
+  groq: 'Groq (backup AI)',
+  cloudflare: 'Cloudflare (backup AI)',
+  search_only: 'Search only (AI unavailable)',
 };
 
 const TRUST_STYLE = {
@@ -112,6 +123,12 @@ const SearchReport = ({ report }) => {
         <Stat label="Candidates" value={report.candidates_compared ?? '—'} />
         <Stat label="Search time" value={typeof report.search_time_ms === 'number' ? `${report.search_time_ms.toFixed(2)} ms` : '—'} />
         <Stat label="Total time" value={typeof report.total_time_ms === 'number' ? `${(report.total_time_ms / 1000).toFixed(2)} s` : '—'} />
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <Stat label="Translated by" value={AI_NAMES[report.translated_by] || (report.translated_by ? report.translated_by : 'Not needed')} />
+        <Stat label="Answered by" value={AI_NAMES[report.answered_by] || report.answered_by || '—'} />
+        <Stat label="Request ID" value={report.request_id || '—'} />
       </div>
 
       {report.top_sources && report.top_sources.length > 0 && (
@@ -216,6 +233,38 @@ export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, 
               <ExternalLink className="h-3 w-3 shrink-0" />
             </a>
           )}
+        </div>
+      )}
+
+      {/* 1a. Backup AI notice: shown only when Sarvam didn't answer */}
+      {message.answered_by && message.answered_by !== 'sarvam' && AI_NAMES[message.answered_by] && (
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 px-1">
+          🤖 {AI_NAMES[message.answered_by]}
+        </p>
+      )}
+
+      {/* 1b. Talk to a person: official helplines (only under answers that aren't fully verified) */}
+      {message.helplines && message.helplines.length > 0 && (
+        <div className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+          <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+            <Phone className="h-3.5 w-3.5" />
+            {L.help}
+          </p>
+          <ul className="space-y-1">
+            {message.helplines.map((h) => (
+              <li key={h.id} className="text-xs text-slate-600 dark:text-slate-400 flex flex-wrap items-baseline gap-x-2">
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{h.label}</span>
+                {h.phone ? (
+                  <a href={`tel:${h.phone}`} className="font-mono font-bold text-primary-700 dark:text-primary-300 hover:underline">{h.display}</a>
+                ) : h.url ? (
+                  <a href={h.url} target="_blank" rel="noopener noreferrer" className="font-bold text-primary-700 dark:text-primary-300 hover:underline">{h.display}</a>
+                ) : (
+                  <span className="font-semibold">{h.display}</span>
+                )}
+                {h.note && <span className="text-[11px] text-slate-400 dark:text-slate-500">· {h.note}</span>}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

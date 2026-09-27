@@ -49,13 +49,14 @@ def detect_intent(query: str, language: str = "en") -> str:
     q = query.lower()
 
     rules = [
+        ("complaint_or_dispute", ["complain", "dispute", "grievance", "fraud", "cheat", "scam", "not received",
+                                  "rejected", "misuse", "took money", "not paid", "harass"]),
         ("eligibility", ["eligible", "eligibility", "who can", "can i get", "qualify", "entitled"]),
         ("documents_required", ["document", "papers", "certificate", "proof", "aadhaar", "form"]),
         ("deadline", ["deadline", "last date", "within how many", "how many days", "how many hours", "cut-off", "cut off"]),
         ("amount_or_benefit", ["how much", "amount", "subsidy", "benefit", "installment", "instalment", "premium", "limit", "interest"]),
         ("registration", ["register", "registration", "form a society", "start a society", "new society"]),
         ("governance", ["election", "board", "committee", "general body", "meeting", "audit", "bye-law", "byelaw", "dividend"]),
-        ("complaint_or_dispute", ["complaint", "dispute", "grievance", "fraud", "not received", "rejected"]),
         ("procedure", ["how to", "how do", "how can", "process", "procedure", "steps", "apply"]),
     ]
     for intent, words in rules:

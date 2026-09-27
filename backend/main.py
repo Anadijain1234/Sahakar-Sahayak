@@ -167,6 +167,13 @@ try:
 except Exception as e:
     print(f"Scoreboard page not available: {e}")
 
+# Admin insights page (/insights?key=...) -- what farmers are asking
+try:
+    from backend.routes.insights import router as insights_router
+    app.include_router(insights_router)
+except Exception as e:
+    print(f"Insights page not available: {e}")
+
 # KEEP THIS AT THE VERY END
 if query_router is not None:
     app.include_router(query_router)

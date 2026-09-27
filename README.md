@@ -27,7 +27,10 @@ Every answer tells the user **where it came from**: an official government PDF (
 | 🔎 **Hybrid document search** | 11 official PDFs are split into ~2,650 passages. Each question is matched three ways: **keyword (BM25)**, **spelling-tolerant (3-letter word parts, so *kisan ≈ kishan*)** and **meaning (Cloudflare Workers AI, `bge-m3` embeddings)**. When a question names a scheme or law (PM-KISAN, KCC, PMKSY, Karnataka Act…), that scheme's own PDF is preferred (**scheme routing**). |
 | ✅ **Trust card on every answer** | 🟢 *Verified from official document* · 🟡 *Partly verified* · 🔵 *General guidance* — plus the exact PDF and page, one tap to open it. |
 | 📊 **Search report** | Tap to see the real numbers behind an answer: keyword %, spelling %, meaning %, final confidence, passages searched, candidates compared, search time and total response time. |
-| 🚫 **Stays on topic** | Questions about cricket, movies, politics etc. are politely refused. |
+| 🚫 **Stays on topic** | Questions about cricket, movies, politics etc. are politely refused — in the user's language — and tricks like *"ignore your instructions"* are ignored. |
+| 🛟 **Never goes silent** | Triple AI fallback: **Sarvam → Groq → Cloudflare**. If all three are down, **search-only mode** shows the exact passage from the official PDF. Every step is logged with a request ID. |
+| ☎️ **Talk to a person** | Under answers that aren't fully verified (and under complaints), the app shows official helplines — Kisan Call Centre 1800-180-1551, crop-insurance helpline 14447, PM-KISAN helpdesk, the Registrar's office — tap to call. |
+| 📈 **Admin insights** | A password-protected `/admin` page: most asked questions, languages, schemes, which AI answered, and the **knowledge gaps** — questions the PDFs couldn't answer, i.e. which document to add next. |
 | 🔊 **Voice in, voice out** | Speech-to-text with a 3-level fallback (**Sarvam → Bhashini → Google**) and text-to-speech (**Bhashini → Google**). |
 | 📤 **Share the full answer** | One tap shares the question, full answer and source link to WhatsApp (or any app on a phone). |
 | 🔐 **Secure sign-up** | Email **and** phone OTP verification, hashed OTPs, attempt limits, resend cooldown; the account is only created after both are verified. |
@@ -47,7 +50,7 @@ flowchart LR
     D --> D2["Spelling-tolerant match<br/>(3-letter word parts)"]
     D --> D3["Meaning match<br/>(Cloudflare bge-m3)"]
     D1 & D2 & D3 --> E["Best 6 passages<br/>+ real scores"]
-    E --> F["Sarvam AI writes a short answer<br/>in the user's language"]
+    E --> F["Sarvam AI writes a short answer<br/>in the user's language<br/>(backups: Groq → Cloudflare → search-only)"]
     F --> G["Trust card + source link<br/>+ search report + share"]
     F --> H["Text-to-speech<br/>Bhashini → Google"]
 ```
@@ -62,39 +65,60 @@ flowchart LR
 
 A passage is only used if its keyword **or** meaning match is strong enough. If nothing qualifies, the answer is labelled *General guidance* and no source is shown — the app never pretends an answer came from a document when it didn't.
 
-**Resilience:** if Cloudflare is unavailable, search continues with keyword + spelling only. If Sarvam's safety filter rejects a request, it retries once without the document text, and the user only ever sees a friendly message — never an error dump.
+**Resilience — the triple fallback engine**
+
+| Step | 1st choice | If it fails | If that fails | Last resort |
+|---|---|---|---|---|
+| Rewrite the question in English | Sarvam `sarvam-105b` | Groq `gpt-oss-120b` | Cloudflare Llama 3.3 70B | search with the original words |
+| Write the answer | Sarvam | Groq | Cloudflare | **search-only mode**: the best PDF passage, word for word, with its source |
+| Meaning search | Cloudflare `bge-m3` | — | — | keyword + spelling search |
+
+An AI that fails (error, timeout, empty reply) is rested for 60 seconds so the next users don't wait for it. Every step is printed in the Render logs with the question's request ID, for example:
+
+```
+[REQ a3f9c2] [QUERY] 📩 new question | language=hi | 'fasal bima claim kitne din me'
+[REQ a3f9c2] [LLM] ▶ sarvam (translate) model=sarvam-105b
+[REQ a3f9c2] [LLM] ❌ sarvam failed translate after 0.41s: status_code: 429 ...  -> switching to groq
+[REQ a3f9c2] [LLM] ✅ groq answered translate in 0.62s (61 chars, provider id=req_01k...)
+[REQ a3f9c2] [SEARCH] 🔎 best 84.06% | keyword 66.67% | ... | doc1.pdf p.103 | 6 pieces | 150 ms
+[REQ a3f9c2] [LLM] ⏭ skipping sarvam (answer): failed 1s ago, cooling down 60s -> groq
+[REQ a3f9c2] [QUERY] 🏁 finished in 2.41s | translated by groq | answered by groq | trust=verified
+```
+
+The chat shows which AI answered (a small note appears when a backup was used), and the search report shows the request ID.
 
 ---
 
-## 📊 Accuracy scoreboard
+## 📊 Accuracy benchmark: 3 AIs grade each other
 
-`evaluate_rag.py` runs **26 test questions** (13 farmer-scheme, 8 cooperative-law, 2 mixed Kannada/Hindi + English, 3 off-topic) through the full pipeline — search **and** Sarvam's written answers. Every expected answer (document, page and key fact such as “72 hours” or “₹6,000”) was checked by hand against the official PDFs.
+`benchmark_questions.json` holds **45 questions** in 7 groups, picked from a bank of 200 (`benchmark_questions_all.json`). Every document question has its PDF, page and an **exact quote from that page** (machine-checked), so anyone can verify the answer key. The app was never tuned on these questions.
 
-Full test, 2026-09-27 (meaning search on):
+| Group | Questions | What it tests |
+|---|---|---|
+| Facts from the PDFs | 14 | one fact, asked in farmer-style words (not the PDF's wording) |
+| Several cases | 4 | e.g. premium for kharif vs rabi vs cash crops — every case must be given |
+| Hindi / Kannada / Nepali / Hinglish / typos | 10 | real multilingual understanding |
+| Reply in the chosen language | 3 | English question, answer must come in Hindi / Kannada / Nepali |
+| Wrong assumption | 5 | *"KCC is only for land owners, right?"* — the app must correct it |
+| On-topic, not in the PDFs | 4 | honest general guidance, no invented rules |
+| Off-topic & tricks | 5 | cricket, recipes, *"ignore all previous instructions"* — must refuse |
 
-| Metric | Result |
-|---|---|
-| Answer contains the correct fact | **95.65%** |
-| Correct official document among the passages given to the AI | **100.00%** |
-| Correct official document ranked #1 | **100.00%** |
-| Cooperative-law questions answered correctly | **100.00%** |
-| Mixed-language questions understood and answered | **100.00%** |
-| Off-topic questions refused | **100.00%** |
-| Average response time | **1.82 s** |
-| **Overall (fact + correct source shown, or correct refusal)** | **25 / 26 (96.15%)** |
+**Contestants.** Three AIs from three companies each answer every question **using our document search**: Sarvam (`sarvam-105b`), Groq (`gpt-oss-120b`) and Cloudflare (Llama 3.3 70B). A fourth contestant, **Sarvam alone** with the same instructions but no documents, shows what our search adds.
 
-The latest numbers are always in [`benchmark_report.md`](benchmark_report.md), which is regenerated on every run.
+**Judges — nobody grades its own work.** Sarvam's answers are graded by Groq and Cloudflare, Groq's by Sarvam and Cloudflare, Cloudflare's by Sarvam and Groq (Sarvam-alone by Groq). Judges see shuffled labels, so they don't know who wrote which answer. Grades: correct / partial / wrong against the answer key. Free automatic checks run too: key fact present, answer script matches the chosen language, off-topic refused, no wrong refusals, correct PDF shown, search rank.
 
-**See it live, no setup:** open **https://sahakar-sahayak-4.onrender.com/scoreboard** — it shows the full result with every question and the AI's actual answer. Visitors can press *Re-check search now* (~2 s, free — no AI credits used) to re-run the search part live.
+**See it live:** **https://sahakar-sahayak-4.onrender.com/scoreboard** — every question, every answer and every grade. Visitors can only re-run the free search check, so nobody can spend the team's AI credits from that page. Latest numbers are also in [`benchmark_report.md`](benchmark_report.md).
 
-Or run it in a terminal:
+Run it yourself (keys are read from a local `.env`, never committed):
 
 ```bash
-python3 evaluate_rag.py          # search only, no API keys needed (~1 s)
-python3 evaluate_rag.py --full   # + Sarvam answers (reads keys from a local .env file, never committed)
+python3 evaluate_rag.py --run      # 1) all contestants answer (~30-40 min)
+python3 evaluate_rag.py --grade    # 2) the judges grade (~20-30 min)
+python3 evaluate_rag.py --report   # rebuild the report from what is saved
+python3 evaluate_rag.py            # free search-only check, no AI at all
 ```
 
-Results are saved to `benchmark_results.json` and `benchmark_report.md`.
+Both steps save after every question and continue where they stopped. A budget guard keeps Groq and Cloudflare inside their free daily limits.
 
 ---
 
@@ -134,11 +158,13 @@ flowchart TD
         AU["/api/auth/*"]
         DOCS["/documents/* (PDFs)"]
         RET[Hybrid retriever<br/>BM25 + word parts + meaning]
-        RAG[Answer service]
+        RAG[Answer service<br/>triple AI fallback]
     end
 
     subgraph External["External services"]
         SARVAM[Sarvam AI<br/>LLM + speech-to-text]
+        GROQ[Groq<br/>backup LLM]
+        CFL[Cloudflare Workers AI<br/>backup LLM]
         CF[Cloudflare Workers AI<br/>bge-m3 embeddings]
         BH[Bhashini DPI<br/>speech]
         GG[Google speech<br/>fallback]
@@ -149,6 +175,7 @@ flowchart TD
 
     UI --> Q --> RET --> CF
     Q --> RAG --> SARVAM
+    RAG -.fallback.-> GROQ -.fallback.-> CFL
     Voice --> V --> SARVAM & BH & GG
     AuthUI --> AU --> DB
     AU --> BREVO & SMS
@@ -168,6 +195,8 @@ flowchart TD
 | `GET` | `/health` | Health check (used by the uptime pinger) |
 | `GET` | `/scoreboard` | Live accuracy scoreboard page (run tests from the browser) |
 | `GET` | `/scoreboard.json` | Last scoreboard result as JSON |
+| `GET` | `/insights?key=…` | Admin insights page (password = `INSIGHTS_KEY`) |
+| `GET` | `/insights.json` · `/insights.csv` | Insights data / all logged questions (header `X-Insights-Key`) |
 | `POST` | `/api/auth/register/initiate` | Start sign-up, sends email + phone OTP |
 | `POST` | `/api/auth/register/verify-email` · `/verify-phone` | Verify each OTP |
 | `POST` | `/api/auth/register/resend-otp` | Resend OTP (60 s cooldown) |
@@ -183,12 +212,15 @@ flowchart TD
   "answer": "Crop loss due to localized calamities must be reported within 72 hours ...",
   "language": "en",
   "trust_level": "verified",
+  "answered_by": "sarvam",
+  "helplines": [],
   "confidence": 0.8406,
   "sources": [{ "document": "doc1.pdf", "page": 103, "link": "https://.../documents/doc1.pdf#page=103", "score": 84.06 }],
   "search_report": {
     "final_confidence": 84.06, "keyword_score": 66.67, "spelling_score": 82.5, "meaning_score": 61.23,
     "pieces_searched": 2655, "pdfs_searched": 11, "candidates_compared": 36,
-    "search_time_ms": 13.81, "total_time_ms": 3421.5, "top_sources": ["..."]
+    "search_time_ms": 13.81, "total_time_ms": 3421.5, "top_sources": ["..."],
+    "request_id": "a3f9c2", "translated_by": "sarvam", "answered_by": "sarvam"
   }
 }
 ```
@@ -202,7 +234,10 @@ Set these in Render → Environment (never commit real values). See `.env.exampl
 | Variable | Used for |
 |---|---|
 | `SARVAM_API_KEY` | Sarvam AI (question rewriting, answers, speech-to-text) |
-| `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Meaning search (optional — word search works without it) |
+| `GROQ_API_KEY` | 1st backup AI (free key from console.groq.com) · optional `GROQ_MODEL` |
+| `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Meaning search + 2nd backup AI · optional `CLOUDFLARE_LLM_MODEL` |
+| `INSIGHTS_KEY` | Password for the admin insights page (`/admin`) |
+| `LLM_ORDER`, `LLM_TIMEOUT`, `LLM_COOLDOWN` | Optional: AI order (default `sarvam,groq,cloudflare`), seconds per call (30), rest after a failure (60) |
 | `BHASHINI_USER_ID`, `BHASHINI_API_KEY` | Bhashini speech |
 | `JWT_SECRET` | Login tokens |
 | `EMAIL_API_KEY`, `SENDER_EMAIL` | Email OTP (Brevo) |
@@ -242,7 +277,7 @@ The search index (`backend/data/chunks_cache.json`) is rebuilt automatically whe
 ```bash
 python3 backend/test_auth.py     # 16 sign-up / OTP / login security tests
 python3 test_search.py           # quick look at search scores for sample questions
-python3 evaluate_rag.py          # accuracy scoreboard (see above)
+python3 evaluate_rag.py          # free search check (full benchmark: see above)
 npm run build                    # frontend build check
 ```
 
@@ -256,7 +291,12 @@ backend/
   routes/query.py          /query pipeline
   routes/auth.py           sign-up, OTP, login
   routes/scoreboard.py     live /scoreboard page
-  services/rag_service.py  question rewriting, answer, trust level, search report
+  routes/insights.py       admin insights (/insights, /insights.json, /insights.csv)
+  services/rag_service.py  question rewriting, answer, trust level, search report, search-only mode
+  services/llm_chain.py    triple AI fallback: Sarvam -> Groq -> Cloudflare, with logs
+  services/reqlog.py       request IDs for the logs
+  services/help_contacts.py official helplines ("talk to a person")
+  services/analytics.py    question log for admin insights (phone numbers / emails removed)
   services/retriever.py    hybrid search (BM25 + word parts + Cloudflare meaning)
   services/nlp_service.py  cleaning, language check, intent
   services/auth_service.py passwords, OTPs, JWT, email/SMS dispatch
@@ -265,8 +305,11 @@ backend/
 anadi_voice_engine.py      speech-to-text / text-to-speech with fallbacks
 src/
   pages/Chat.jsx           chat screen
-  components/chat/AnswerFooter.jsx  trust card, share, search report
-evaluate_rag.py            accuracy scoreboard
+  pages/Admin.jsx          admin insights (/admin)
+  components/chat/AnswerFooter.jsx  trust card, helplines, share, search report
+evaluate_rag.py            benchmark: 3 AIs answer, the other AIs judge
+benchmark_questions.json   the 45 test questions with answer keys and PDF quotes
+benchmark_questions_all.json  bank of 200 questions
 test_search.py             search smoke test
 ```
 
@@ -276,7 +319,8 @@ test_search.py             search smoke test
 
 - Knowledge base covers Karnataka + central cooperative law; other states' Acts can be added by dropping PDFs into `backend/data/documents/`.
 - Scanned (image-only) PDFs can't be read yet — OCR is a planned addition.
-- Planned: state selection for state-specific rules, an admin dashboard of common questions by district, and a "talk to a cooperative officer" hand-off for disputes and complaints.
+- Planned: state selection for state-specific rules and more states' Acts.
+- The admin insights log lives on the server's disk; on Render's free plan it starts again after each redeploy (a free hosted database would make it permanent).
 
 ---
 

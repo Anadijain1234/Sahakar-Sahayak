@@ -40,6 +40,8 @@ import numpy as np
 import requests
 from pypdf import PdfReader
 
+from backend.services.reqlog import log
+
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DOCS_DIR = os.path.join(BASE_DIR, "backend", "data", "documents")
 if not os.path.exists(DOCS_DIR):
@@ -339,7 +341,7 @@ def _meaning_similarities(query: str):
     try:
         q = _embed([query], timeout=QUERY_TIMEOUT)[0]
     except Exception as e:
-        print(f"[RETRIEVER] ⚠️ Meaning search skipped for this question: {e}")
+        log("SEARCH", f"⚠️ meaning search (Cloudflare) failed for this question, using word search only: {e}")
         return None
     return _vectors @ q
 
@@ -491,11 +493,11 @@ def search(query: str, top_k: int = MIN_RESULTS, boost_terms: str = ""):
     if results:
         b = results[0]
         meaning_txt = f"{b['meaning_score'] * 100:.2f}%" if b["meaning_score"] is not None else "off"
-        print(f"[RETRIEVER] 🔎 Best {b['final_score'] * 100:.2f}% | keyword {b['keyword_score'] * 100:.2f}% | "
+        log("SEARCH", f"🔎 best {b['final_score'] * 100:.2f}% | keyword {b['keyword_score'] * 100:.2f}% | "
               f"spelling {b['spelling_score'] * 100:.2f}% | meaning {meaning_txt} | "
               f"{b['document']} p.{b['page']} | {len(results)} pieces | {stats['search_time_ms']} ms")
     else:
-        print(f"[RETRIEVER] 🔎 No piece matched well enough -- using general knowledge. ({stats['search_time_ms']} ms)")
+        log("SEARCH", f"🔎 no piece matched well enough -- answer will use general knowledge ({stats['search_time_ms']} ms)")
     return results, stats
 
 

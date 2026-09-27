@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/AppContext';
 import { Navbar } from '../components/layout/Navbar';
 import { FeatureCard } from '../components/common/FeatureCard';
@@ -209,8 +209,11 @@ export const LandingPage = () => {
             rel="noopener noreferrer"
             className="inline-block text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline"
           >
-            📊 Tested on 26 real questions from official documents: see our live accuracy scoreboard
+            📊 Accuracy tested on real questions from official documents: see our live scoreboard
           </a>
+          <Link to="/admin" className="inline-block ml-3 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline">
+            🔒 Admin insights
+          </Link>
           <div className="text-[10px] text-slate-450 dark:text-slate-650">
             &copy; {new Date().getFullYear()} Sahakar Sahayak. Platform developed for multilingual citizen support. All rights reserved.
           </div>

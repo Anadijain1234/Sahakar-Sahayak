@@ -141,7 +141,9 @@ export const Chat = () => {
         confidence: response.confidence,
         answer_source: response.answer_source,
         trust_level: response.trust_level,
-        search_report: response.search_report
+        search_report: response.search_report,
+        helplines: response.helplines,
+        answered_by: response.answered_by
       };
       addChatMessage(chatId, assistantMsg);
     } catch (err) {
@@ -191,7 +193,9 @@ export const Chat = () => {
         confidence: response.confidence,
         answer_source: response.answer_source,
         trust_level: response.trust_level,
-        search_report: response.search_report
+        search_report: response.search_report,
+        helplines: response.helplines,
+        answered_by: response.answered_by
       };
 
       addChatMessage(chatId, assistantMsg);

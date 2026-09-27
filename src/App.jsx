@@ -18,6 +18,7 @@ import { ChatHistory } from './pages/ChatHistory';
 import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
 import { Help } from './pages/Help';
+import { Admin } from './pages/Admin';
 
 // Route Guard to redirect to login if not authenticated or not guest
 const ProtectedRoute = ({ children }) => {
@@ -36,6 +37,7 @@ function AppContent() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/admin" element={<Admin />} />
         
         {/* Protected Dashboard/Private Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

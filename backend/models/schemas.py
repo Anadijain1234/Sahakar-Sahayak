@@ -20,5 +20,7 @@ class QueryResponse(BaseModel):
     answer_source: Optional[str] = None      # documents | general | refused | error
     trust_level: Optional[str] = None        # verified | partial | general | refused | error
     search_report: Optional[Dict[str, Any]] = None  # numbers shown in the "Search report" panel
+    helplines: List[Dict[str, Any]] = []
+    answered_by: Optional[str] = None             # official helplines shown under unverified answers
     action_url: Optional[str] = None
     qr_code_base64: Optional[str] = None

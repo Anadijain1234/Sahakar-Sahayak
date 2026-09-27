@@ -3,14 +3,14 @@ Live accuracy scoreboard -- open /scoreboard in a browser.
 
 What it shows
   1. The OFFICIAL result saved in the repo (benchmark_results.json). The team
-     runs the full test with Sarvam answers ONCE (python3 evaluate_rag.py --full)
+     runs the benchmark ONCE (python3 evaluate_rag.py --run, then --grade)
      and pushes that file, so the page always shows the full result.
   2. A "Re-check search now" button for visitors. It runs ONLY the free search
-     test (no Sarvam calls at all), so nobody -- including judges -- can spend
-     your Sarvam credits from this page.
+     test (no AI answers at all), so nobody -- including judges -- can spend
+     your Sarvam / Groq / Cloudflare credits from this page.
 
   GET  /scoreboard         -> the page
-  POST /scoreboard/run     -> free search re-check (max once every 10 s)
+  POST /scoreboard/run     -> free search re-check (max once a minute)
   GET  /scoreboard.json    -> official saved result as JSON
 """
 
@@ -30,7 +30,7 @@ if ROOT not in sys.path:
 
 router = APIRouter()
 
-SEARCH_COOLDOWN_S = 10
+SEARCH_COOLDOWN_S = 60
 
 _lock = threading.Lock()
 _state = {"running": False, "done": 0, "total": 0, "last_run": 0.0, "error": None, "live": None}
@@ -40,7 +40,7 @@ def _load_official():
     try:
         with open(os.path.join(ROOT, "benchmark_results.json"), "r", encoding="utf-8") as f:
             data = json.load(f)
-        if isinstance(data, dict) and "summary" in data:
+        if isinstance(data, dict) and ("summary" in data or data.get("version") in (2, 3)):
             return data
     except Exception:
         pass
@@ -94,72 +94,114 @@ def _tick(v):
     return '<span class="ok">✓</span>' if v else '<span class="bad">✗</span>'
 
 
+ORDER = ["sarvam", "groq", "cloudflare", "sarvam_plain"]
+GROUPS = {
+    "fact": "Facts from the PDFs", "multi_case": "Answers with several cases",
+    "language": "Hindi / Kannada / Nepali / Hinglish / typos", "reply_language": "Reply in the chosen language",
+    "false_premise": "Wrong assumption corrected", "not_in_docs": "On-topic, not in the PDFs",
+    "off_topic": "Off-topic & rule-breaking tricks",
+}
+LANGS = {"en": "English", "hi": "Hindi", "kn": "Kannada", "ne": "Nepali"}
+GRADE_CLASS = {"correct": "ok", "partial": "mid", "wrong": "bad"}
+JUDGE_SHORT = {"sarvam": "Sarvam", "groq": "Groq", "cloudflare": "Cloudflare"}
+
+
+def _grade_chip(g):
+    if not g:
+        return '<span class="muted">—</span>'
+    return f'<span class="chip {GRADE_CLASS.get(g["grade"], "")}" title="{_e(g.get("reason"))}">{_e(g["grade"])}</span>'
+
+
 def _official_section(result):
-    s = result["summary"]
-    full = s.get("mode") == "search+answers"
-    o, sr = s["overall"], s["search"]
-    out = [f'''
-    <section class="hero">
-      <div class="big">{o["passed"]}<span>/{o["total"]}</span></div>
-      <div>
-        <div class="score">{_pct(o["score"])} passed</div>
-        <div class="muted">{"Full test: search + AI answers" if full else "Search test"} ·
-          meaning search {"on" if s.get("meaning_search") else "off"} ·
-          {s.get("pieces_indexed", 0):,} passages from {s.get("pdfs_indexed", 0)} official PDFs ·
-          run {_e(s.get("generated_at"))}</div>
-      </div>
-    </section>''']
+    s = result.get("summary") or {}
+    C = s.get("contestants") or {}
+    present = [c for c in ORDER if c in C]
+    if not present:
+        return '<p class="muted">The benchmark has not been run yet.</p>'
+    J = s.get("judges") or {}
+    out = [f'''<p class="muted">{s.get("questions", 0)} questions · three AIs from three companies answer using our
+      document search, and <b>every answer is graded by the other AIs, never by the one that wrote it</b> ·
+      two judges agree on {_pct(J.get("agreement"))} of double-graded answers · run {_e(s.get("generated_at"))}</p>''']
 
-    cards = []
-    if full and "answers" in s:
-        a = s["answers"]
-        cards += [
-            ("Answer contains the correct fact", _pct(a["fact_accuracy"])),
-            ("Correct official source shown", _pct(a["source_accuracy"])),
-            ("Off-topic questions refused", _pct(a["refusal_accuracy"])),
-            ("Answers marked 'Verified'", _pct(a["verified_share"])),
-            ("Avg response time", f'{a["avg_response_s"]:.2f} s'),
-        ]
-    cards += [
-        ("Correct PDF ranked #1", _pct(sr["hit_at_1"])),
-        ("Correct PDF in top 3", _pct(sr["hit_at_3"])),
-        ("Correct PDF sent to AI (top 6)", _pct(sr["hit_at_6"])),
-        ("Exact page found", _pct(sr["page_at_6"])),
-        ("Avg search time", f'{sr["avg_search_ms"]:.2f} ms'),
-    ]
-    out.append('<section class="cards">' + "".join(
-        f'<div class="card"><div class="v">{v}</div><div class="k">{k}</div></div>' for k, v in cards) + "</section>")
+    hero = []
+    for c in present:
+        b = C[c]
+        hero.append(f'''<div class="card hero-card {'main' if c == 'sarvam' else ''}">
+          <div class="k">{_e(b["short"])}</div><div class="big">{_pct(b.get("score"))}</div>
+          <div class="muted small">judged by {_e(" + ".join(b.get("judged_by", [])))} ·
+          {b["graded"]} of {b["answered"]} graded</div></div>''')
+    out.append(f'<section class="cards three">{"".join(hero)}</section>')
+    d = s.get("documents_add")
+    if d:
+        out.append(f'''<div class="banner ok-bg">📚 <b>What our document search adds to Sarvam:</b>
+          {d["without"]:.2f}% → {d["with"]:.2f}% (<b>{d["points"]:+.2f} points</b>, same judge: {_e(d["judge"])})</div>''')
 
-    head = "<tr><th>#</th><th>Topic</th><th>Question</th><th>Answer key (from PDF)</th><th>Rank</th>"
-    head += "<th>Fact</th><th>Source</th><th>AI answer</th>" if full else "<th>Best match</th>"
-    head += "<th>Result</th></tr>"
-    body = []
-    for r in result["questions"]:
-        best = r["top_results"][0]["final"] if r.get("top_results") else None
-        key = _e(r["expected_doc"]) if r["expected_doc"] else "must be refused"
-        if r.get("expected_facts"):
-            key += f'<div class="muted small">key fact: {_e(", ".join(r["expected_facts"]))}</div>'
-        row = (f'<tr><td class="mono">{_e(r["id"])}</td><td>{_e(r["topic"])}</td>'
-               f'<td class="q">{_e(r["question"])}</td><td>{key}</td>'
-               f'<td class="mono">{_e(r.get("rank")) if r["expected_doc"] else "—"}</td>')
-        if full:
-            fact = r.get("fact_ok") if r["expected_doc"] else r.get("refused_ok")
-            src = r.get("source_ok") if r["expected_doc"] else None
-            ans = r.get("answer") or ""
-            row += (f'<td>{_tick(fact)}</td><td>{_tick(src)}</td>'
-                    f'<td class="small">{_e(ans[:220])}{"…" if len(ans) > 220 else ""}</td>')
-        else:
-            row += f'<td class="mono">{_pct(best)}</td>'
-        row += f'<td>{_tick(r.get("passed"))}</td></tr>'
-        body.append(row)
-    out.append(f'<h2>Every question</h2><div class="tablewrap"><table>{head}{"".join(body)}</table></div>')
+    def table(title, rows):
+        head = "<tr><th></th>" + "".join(f"<th>{_e(C[c]['short'])}</th>" for c in present) + "</tr>"
+        body = "".join(f"<tr><td>{_e(label)}</td>" + "".join(f'<td class="mono">{fn(C[c])}</td>' for c in present) + "</tr>"
+                       for label, fn in rows)
+        return f'<h2>{title}</h2><div class="tablewrap"><table>{head}{body}</table></div>'
+
+    names = J.get("names") or {}
+    out.append(table("Score by question type", [
+        (name, (lambda b, k=k: _pct((b["by_group"].get(k) or {}).get("score")))) for k, name in GROUPS.items()] + [
+        (f"Score from {names.get(j, j)}", (lambda b, j=j: _pct((b["by_judge"].get(j) or {}).get("score"))))
+        for j in ("sarvam", "groq", "cloudflare")]))
+    out.append(table("Score by language", [
+        (name, (lambda b, k=k: _pct((b["by_language"].get(k) or {}).get("score")))) for k, name in LANGS.items()]))
+    out.append(table("Automatic checks (no AI judge)", [
+        ("Key fact present", lambda b: _pct(b["auto"]["key_fact_found"])),
+        ("Answer in the chosen language's script", lambda b: _pct(b["auto"]["right_language"])),
+        ("Off-topic questions refused", lambda b: _pct(b["auto"]["offtopic_refused"])),
+        ("On-topic wrongly refused (lower is better)", lambda b: _pct(b["auto"]["wrongly_refused"])),
+        ("Correct official PDF shown", lambda b: _pct(b["auto"]["correct_source_shown"])),
+        ("Avg response time", lambda b: f'{b["auto"]["avg_time_s"]:.2f} s' if b["auto"].get("avg_time_s") is not None else "—"),
+    ]))
+    if "sarvam" in C and C["sarvam"].get("search"):
+        sr = C["sarvam"]["search"]
+        cards = [("Correct PDF ranked #1", _pct(sr["hit_at_1"])), ("Correct PDF in top 3", _pct(sr["hit_at_3"])),
+                 ("Correct PDF sent to AI (top 6)", _pct(sr["hit_at_6"])), ("Exact page found", _pct(sr["page_at_6"])),
+                 ("'Not in PDFs' not falsely Verified", _pct(sr["not_in_docs_honest"]))]
+        out.append("<h2>Our document search</h2><section class='cards'>" + "".join(
+            f'<div class="card"><div class="v">{v}</div><div class="k">{k}</div></div>' for k, v in cards) + "</section>")
+
+    items = []
+    for r in result.get("questions", []):
+        runs = r.get("runs") or {}
+        grades = r.get("grades") or {}
+        key = _e(r.get("reference"))
+        if r.get("doc"):
+            key += f' <span class="muted small">({_e(r["doc"])}, page {_e(", ".join(map(str, r.get("pages") or [])))})</span>'
+        blocks = []
+        for c in present:
+            run = runs.get(c)
+            if not run:
+                continue
+            if run.get("error"):
+                blocks.append(f'<div class="ans"><b>{_e(C[c]["short"])}</b> <span class="bad">no answer</span></div>')
+                continue
+            ans = run.get("answer") or ""
+            auto = run.get("auto") or {}
+            chips = " · ".join(f'{JUDGE_SHORT[j]} {_grade_chip((grades.get(j) or {}).get(c))}'
+                               for j in ("sarvam", "groq", "cloudflare") if c in (grades.get(j) or {}))
+            blocks.append(f'''<div class="ans"><div><b>{_e(C[c]["short"])}</b>
+              <span class="muted small">{run.get("time_s", 0):.1f}s</span> · {chips or '<span class="muted">not graded</span>'}
+              <span class="small muted">· fact {_tick(auto.get("fact_ok"))} · language {_tick(auto.get("lang_ok"))}
+              {"· source " + _tick(auto.get("source_ok")) if "source_ok" in auto else ""}</span></div>
+              <div class="small">{_e(ans[:600])}{"…" if len(ans) > 600 else ""}</div></div>''')
+        items.append(f'''<details><summary><span class="mono">{_e(r["id"])}</span>
+          <span class="tag">{_e(GROUPS.get(r["group"], r["group"]))}</span>
+          <span class="tag">{_e(LANGS.get(r["language"], r["language"]))}</span> {_e(r["q"])}</summary>
+          <div class="key"><b>Answer key:</b> {key}</div>{"".join(blocks)}</details>''')
+    out.append(f'<h2>Every question ({len(items)})</h2><p class="muted small">Click a question to see every answer '
+               f'and its grades (hover a grade for the judge\'s reason).</p>{"".join(items)}')
     return "".join(out)
 
 
 def _live_section():
     running, live = _state["running"], _state["live"]
     disabled = "disabled" if running else ""
-    out = ['<h2>Re-check search now</h2>']
+    out = ['<h2>Re-check our search now</h2>']
     if running:
         out.append(f'<div class="banner run">⏳ Checking… {_state["done"]} / {_state["total"] or "…"} questions. '
                    f'This page refreshes by itself.</div>')
@@ -167,23 +209,30 @@ def _live_section():
         out.append(f'<div class="banner warn">Check failed: {_e(_state["error"])}</div>')
     elif live:
         s = live["summary"]
-        out.append(f'<div class="banner ok-bg">Live search check just now: <b>{s["overall"]["passed"]}/{s["overall"]["total"]}</b> '
-                   f'({_pct(s["overall"]["score"])}) · correct PDF in top 6: {_pct(s["search"]["hit_at_6"])} · '
-                   f'avg search {s["search"]["avg_search_ms"]:.2f} ms · run {_e(s["generated_at"])}</div>')
+        out.append(f'<div class="banner ok-bg">Live search check on {s["questions"]} English document questions: '
+                   f'correct PDF #1 <b>{_pct(s["hit_at_1"])}</b> · in top 6 <b>{_pct(s["hit_at_6"])}</b> · '
+                   f'exact page {_pct(s["page_at_6"])} · avg search {s["avg_search_ms"]:.2f} ms · '
+                   f'meaning search {"on" if s.get("meaning_search") else "off"} · run {_e(s["generated_at"])}</div>')
     out.append(f'''
     <form method="post" action="/scoreboard/run" class="actions">
-      <button class="primary" {disabled}>Re-check search now <span>~2 seconds · free, no AI credits used</span></button>
+      <button class="primary" {disabled}>Re-check search now <span>about a minute · free, no AI answers are generated</span></button>
     </form>
-    <p class="muted small">Every question has an answer key taken from the official PDFs (document, page and key fact,
-    e.g. “72 hours”). The official result above was produced by running all questions through the full
-    pipeline, including the AI's written answers. The button here re-runs only the search part live, for free.</p>''')
+    <p class="muted small">This button re-runs only the document search part, live, for free. The full result above was
+    produced once by the team, because writing and grading the AI answers uses the team's credits.</p>''')
     return "".join(out)
 
 
 @router.get("/scoreboard", response_class=HTMLResponse, include_in_schema=False)
 def scoreboard_page():
     official = _load_official()
-    main = _official_section(official) if official else '<p class="muted">No saved result yet.</p>'
+    if official and official.get("version") == 3:
+        main = _official_section(official)
+    elif official:
+        o = (official.get("summary") or {}).get("overall") or {}
+        main = (f'<p class="muted">The new 3-AI benchmark has not been run yet. Previous 26-question check: '
+                f'{o.get("passed", "—")}/{o.get("total", "—")} passed.</p>')
+    else:
+        main = '<p class="muted">No saved result yet.</p>'
     refresh = '<meta http-equiv="refresh" content="4">' if _state["running"] else ""
     return HTMLResponse(f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">{refresh}
@@ -210,10 +259,17 @@ th{{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut
 button{{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--brand);background:var(--card);color:var(--ink);padding:10px 14px;text-align:left}}
 button span{{display:block;font-size:12px;color:var(--muted)}}button:disabled{{opacity:.5;cursor:not-allowed}}
 a{{color:var(--brand)}}
+.three{{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}.hero-card .big{{font-size:34px;font-weight:800;line-height:1.1;font-family:ui-monospace,Menlo,Consolas,monospace}}
+.hero-card.main{{border:2px solid var(--brand)}}.hero-card .k{{font-weight:700;color:var(--ink);font-size:14px}}
+details{{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:6px 0;padding:8px 12px}}
+summary{{cursor:pointer;font-size:13px}}.tag{{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;padding:0 7px;margin-right:4px;color:var(--muted)}}
+.tag.hid{{border-color:var(--brand);color:var(--brand)}}.key{{font-size:13px;margin:8px 0;padding:8px;border-radius:8px;background:var(--bg)}}
+.ans{{border-top:1px solid var(--line);padding:8px 0;font-size:13px}}.chip{{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;cursor:help}}
+.chip.ok{{background:var(--okbg);color:var(--ok)}}.chip.mid{{background:var(--warn)}}.chip.bad{{color:var(--bad);border:1px solid var(--bad)}}
 </style></head><body><main>
 <h1>🌾 Sahakar Sahayak · Accuracy Scoreboard</h1>
-<div class="muted">The assistant tested against answer keys taken from official government PDFs ·
-<a href="/scoreboard.json">raw JSON</a></div>
+<div class="muted">Sarvam, Groq and Cloudflare answer questions with keys from official government PDFs, and grade
+each other · <a href="/scoreboard.json">raw JSON</a></div>
 {main}
 {_live_section()}
 </main></body></html>''')
