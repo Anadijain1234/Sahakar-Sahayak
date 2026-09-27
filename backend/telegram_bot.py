@@ -73,13 +73,13 @@ while True:
 
                 if data == "lang_kn":
                     user_languages[chat_id] = "kn"
-                    reply = "✅ **ಭಾಷೆಯನ್ನು ಕನ್ನಡಕ್ಕೆ ಹೊಂದಿಸಲಾಗಿದೆ!**\nನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಿ (ಉದಾ: PM-KISAN ಯೋಜನೆಯ ಪ್ರಯೋಜನಗಳೇನು?)."
+                    reply = "✅ **ಭಾಷೆಯನ್ನು ಕನ್ನಡಕ್ಕೆ ಹೊಂದಿಸಲಾಗಿದೆ!**\nನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಿ (ಉದಾ: ಸಹಕಾರ ಸಂಘವನ್ನು ನೋಂದಾಯಿಸುವುದು ಹೇಗೆ? / PM-KISAN ಯೋಜನೆಯ ಪ್ರಯೋಜನಗಳೇನು?)."
                 elif data == "lang_en":
                     user_languages[chat_id] = "en"
-                    reply = "✅ **Language set to English!**\nType your question (e.g., What are PM KISAN benefits?)."
+                    reply = "✅ **Language set to English!**\nType your question (e.g., How do I register a cooperative society? / What are PM-KISAN benefits?)."
                 elif data == "lang_hi":
                     user_languages[chat_id] = "hi"
-                    reply = "✅ **भाषा हिंदी सेट की गई है!**\nअपना प्रश्न पूछें (उदा: PM-KISAN के लाभ क्या हैं?)."
+                    reply = "✅ **भाषा हिंदी सेट की गई है!**\nअपना प्रश्न पूछें (उदा: सहकारी समिति का पंजीकरण कैसे करें? / PM-KISAN के लाभ क्या हैं?)."
                 else:
                     reply = "✅ Language updated!"
 

@@ -1,7 +1,5 @@
 import os
-import io
 import re
-import base64
 import urllib.parse
 from dotenv import load_dotenv
 
@@ -47,6 +45,7 @@ LANG_MAP = {
     "en": "English",
     "hi": "Hindi",
     "kn": "Kannada",
+    "ne": "Nepali",
     "ta": "Tamil",
     "te": "Telugu",
     "ml": "Malayalam",
@@ -79,6 +78,13 @@ def _apply_lexicon_fallback(text: str) -> str:
     return " ".join(boosters)
 
 
+def lexicon_terms(text: str) -> str:
+    """Official scheme names for words found in `text` (e.g. 'kisan' -> 'PM-KISAN
+    Pradhan Mantri Kisan Samman Nidhi'). Used ONLY to help the search find
+    candidates -- never counted in the match score, never sent to the AI."""
+    return _apply_lexicon_fallback(text or "")
+
+
 def normalize_query_to_english(raw_query: str) -> str:
     """Turn a messy, mixed-language question (Kannada + English + Hindi,
     local dialect, spelling mistakes) into ONE clear English question,
@@ -87,7 +93,7 @@ def normalize_query_to_english(raw_query: str) -> str:
         return ""
 
     if client is None:
-        return f"{raw_query} {_apply_lexicon_fallback(raw_query)}".strip()
+        return raw_query.strip()
 
     print(f"\n[SARVAM LOG] 🔄 Normalizing Query: '{raw_query}'")
 
@@ -129,15 +135,12 @@ def normalize_query_to_english(raw_query: str) -> str:
             print("[SARVAM LOG] ⚠️ Marked off-topic or empty -- passing original question through.")
             return raw_query
 
-        lexicon_boost = _apply_lexicon_fallback(f"{raw_query} {english_question}")
-        final_search_query = f"{english_question} {lexicon_boost}".strip()
-
-        print(f"[SARVAM LOG] ✅ English Question: '{final_search_query}'")
-        return final_search_query
+        print(f"[SARVAM LOG] ✅ English Question: '{english_question}'")
+        return english_question
 
     except Exception as e:
         print(f"[SARVAM LOG] ❌ Normalization failed: {e}")
-        return f"{raw_query} {_apply_lexicon_fallback(raw_query)}".strip()
+        return raw_query.strip()
 
 
 def _call_synthesis(system_prompt: str, user_prompt: str) -> str:
@@ -161,49 +164,30 @@ def get_answer(
     language: str = "en",
     intent: str = "general",
     retrieved_docs: list = None,
+    search_stats: dict = None,
 ) -> dict:
-    sources = []
     context_chunks = []
     seen_texts = set()
-    best_score = 0.0   # real 0-1 match score of the best PDF piece (from retriever.py)
+    retrieved_docs = retrieved_docs or []
 
-    if retrieved_docs:
-        for doc in retrieved_docs:
-            doc_name = doc.get("document", doc.get("source_doc", "Official_Document.pdf"))
-            raw_page = doc.get("page", doc.get("source_page", None))
-            text_chunk = doc.get("text", "").strip()
+    for doc in retrieved_docs:
+        doc_name = doc.get("document", doc.get("source_doc", "Official_Document.pdf"))
+        raw_page = doc.get("page", doc.get("source_page", None))
+        text_chunk = doc.get("text", "").strip()
+        if not text_chunk or text_chunk in seen_texts:
+            continue
+        seen_texts.add(text_chunk)
+        try:
+            page_val = int(raw_page)
+        except (ValueError, TypeError):
+            page_val = None
+        context_chunks.append(
+            f"[Document: {doc_name} | Page: {page_val if page_val is not None else 'General'}]\n{text_chunk}"
+        )
 
-            if not text_chunk or text_chunk in seen_texts:
-                continue
-            seen_texts.add(text_chunk)
-
-            try:
-                page_val = int(raw_page)
-            except (ValueError, TypeError):
-                page_val = None
-
-            try:
-                piece_score = float(doc.get("similarity_score", 0.0))
-            except (ValueError, TypeError):
-                piece_score = 0.0
-            best_score = max(best_score, min(piece_score, 1.0))
-
-            context_chunks.append(
-                f"[Document: {doc_name} | Page: {page_val if page_val is not None else 'General'}]\n{text_chunk}"
-            )
-
-            if doc_name not in [s["document"] for s in sources]:
-                # FULL address, so the link opens on the backend where the PDFs live.
-                link_url = f"{PUBLIC_BACKEND_URL}/documents/{urllib.parse.quote(doc_name)}"
-                if page_val is not None:
-                    link_url += f"#page={page_val}"
-
-                sources.append({
-                    "document": doc_name,
-                    "page": page_val,
-                    "link": link_url,
-                    "score": round(piece_score, 2),
-                })
+    # Sources shown to the user: only pieces that matched almost as well as the best one
+    sources = _relevant_sources(retrieved_docs)
+    report = _build_search_report(retrieved_docs, search_stats)
 
     context_block = "\n\n---\n\n".join(context_chunks[:6])
 
@@ -215,6 +199,8 @@ def get_answer(
             "sources": sources,
             "confidence": 0.0,
             "answer_source": "error",
+            "trust_level": "error",
+            "search_report": report,
             "action_url": None,
             "qr_code_base64": None,
         }
@@ -273,6 +259,8 @@ def get_answer(
             "sources": [],
             "confidence": 0.0,
             "answer_source": "error",
+            "trust_level": "error",
+            "search_report": report,
             "action_url": None,
             "qr_code_base64": None,
         }
@@ -283,61 +271,131 @@ def get_answer(
     is_refusal = "can only assist with" in answer_text.lower() or "out_of_domain" in answer_text.lower()
     has_documents = used_context and len(sources) > 0
 
-    # Honest confidence (0-1) shown to the user:
-    #   refused (off-topic)      -> 0
-    #   answered from the PDFs   -> the real match score of the best PDF piece
-    #   Sarvam general knowledge -> 0.5 (not checked against an official document)
+    best = retrieved_docs[0] if (has_documents and retrieved_docs) else None
+
     if is_refusal:
         sources = []
         confidence = 0.0
         answer_source = "refused"
-    elif has_documents:
-        confidence = round(best_score, 2) if best_score > 0 else 0.6
+        trust_level = "refused"
+    elif best is not None:
+        confidence = float(best.get("final_score", best.get("similarity_score", 0.0)))
         answer_source = "documents"
+        trust_level = _trust_level(best, report)
     else:
         sources = []
-        confidence = 0.5
+        confidence = 0.0
         answer_source = "general"
+        trust_level = "general"
 
-    action_url, qr_code_base64 = _generate_share_qr(query, answer_text, sources, confidence)
+    report["used_documents"] = answer_source == "documents"
 
     return {
         "answer": answer_text,
         "language": language,
         "intent": intent,
         "sources": sources,
-        "confidence": confidence,
+        "confidence": round(confidence, 4),
         "answer_source": answer_source,
-        "action_url": action_url,
-        "qr_code_base64": qr_code_base64,
+        "trust_level": trust_level,
+        "search_report": report,
+        # WhatsApp sharing is now done by the website itself with the FULL
+        # answer (no 600-letter QR limit), so these stay empty.
+        "action_url": None,
+        "qr_code_base64": None,
     }
 
 
-def _generate_share_qr(query: str, answer: str, sources: list, confidence: float):
-    if confidence <= 0.0:
-        return None, None
+# ---------------------------------------------------------------------------
+# Trust card helpers
+# ---------------------------------------------------------------------------
+def _pct(x):
+    """0-1 -> percent with 2 decimals (None stays None)."""
+    return None if x is None else round(float(x) * 100, 2)
 
-    try:
-        primary_doc = sources[0]["document"] if sources else "General Guidelines"
-        clean_excerpt = answer[:600].replace("\n", " ").strip()
-        if len(answer) > 600:
-            clean_excerpt += "..."
 
-        share_text = f"🌾 *Sahakar Sahayak Receipt*\n\n*Query:* {query}\n\n*Guidance:* {clean_excerpt}\n\n*Source:* {primary_doc}"
-        encoded_message = urllib.parse.quote(share_text)
-        action_url = f"https://wa.me/?text={encoded_message}"
+def _doc_link(doc_name: str, page_val) -> str:
+    link = f"{PUBLIC_BACKEND_URL}/documents/{urllib.parse.quote(doc_name)}"
+    if page_val is not None:
+        link += f"#page={page_val}"
+    return link
 
-        import qrcode
-        qr = qrcode.QRCode(version=None, box_size=4, border=2)
-        qr.add_data(action_url)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="black", back_color="white")
 
-        buffer = io.BytesIO()
-        img.save(buffer, format="PNG")
-        qr_code_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+def _relevant_sources(retrieved_docs: list, max_sources: int = 3, margin: float = 0.15) -> list:
+    """Best source(s) only: pieces scoring within `margin` of the top piece,
+    one entry per document+page, at most `max_sources`."""
+    if not retrieved_docs:
+        return []
+    top = float(retrieved_docs[0].get("final_score", retrieved_docs[0].get("similarity_score", 0.0)))
+    out, seen = [], set()
+    for doc in retrieved_docs:
+        score = float(doc.get("final_score", doc.get("similarity_score", 0.0)))
+        if score < top - margin:
+            continue
+        name = doc.get("document", "Official_Document.pdf")
+        try:
+            page_val = int(doc.get("page"))
+        except (ValueError, TypeError):
+            page_val = None
+        key = (name, page_val)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({
+            "document": name,
+            "page": page_val,
+            "link": _doc_link(name, page_val),
+            "score": _pct(score),
+        })
+        if len(out) >= max_sources:
+            break
+    return out
 
-        return action_url, qr_code_base64
-    except Exception as e:
-        print(f"[RAG QR LOG] ⚠️ QR generation bypassed: {e}")
-        return None, None
+
+def _build_search_report(retrieved_docs: list, stats: dict) -> dict:
+    """Numbers for the 'Search report' panel. Every value comes from the real search."""
+    stats = stats or {}
+    best = retrieved_docs[0] if retrieved_docs else None
+    report = {
+        "final_confidence": _pct(best.get("final_score")) if best else 0.0,
+        "keyword_score": _pct(best.get("keyword_score")) if best else 0.0,
+        "spelling_score": _pct(best.get("spelling_score")) if best else 0.0,
+        "meaning_score": _pct(best.get("meaning_score")) if best else None,
+        "meaning_available": bool(stats.get("meaning_available", False)),
+        "pieces_searched": stats.get("pieces_searched", 0),
+        "pdfs_searched": stats.get("pdfs_searched", 0),
+        "candidates_compared": stats.get("candidates_compared", 0),
+        "pieces_used": len(retrieved_docs),
+        "search_time_ms": stats.get("search_time_ms", 0.0),
+        "used_documents": bool(retrieved_docs),
+        "top_sources": [],
+    }
+    seen = set()
+    for doc in retrieved_docs:
+        key = (doc.get("document"), doc.get("page"))
+        if key in seen:
+            continue
+        seen.add(key)
+        report["top_sources"].append({
+            "document": doc.get("document"),
+            "page": doc.get("page"),
+            "link": _doc_link(doc.get("document", ""), doc.get("page")),
+            "final": _pct(doc.get("final_score")),
+            "keyword": _pct(doc.get("keyword_score")),
+            "spelling": _pct(doc.get("spelling_score")),
+            "meaning": _pct(doc.get("meaning_score")),
+        })
+        if len(report["top_sources"]) >= 5:
+            break
+    return report
+
+
+def _trust_level(best: dict, report: dict) -> str:
+    """verified = words AND meaning agree strongly; partial = a document matched,
+    but not strongly on both."""
+    kw = float(best.get("keyword_score", 0.0))
+    if report.get("meaning_available"):
+        ms = float(best.get("meaning_scaled", 0.0))
+        final = float(best.get("final_score", 0.0))
+        return "verified" if (kw >= 0.5 and ms >= 0.35 and final >= 0.6) else "partial"
+    return "verified" if kw >= 0.75 else "partial"

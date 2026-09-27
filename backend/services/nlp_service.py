@@ -7,6 +7,7 @@ SUPPORTED_LANGUAGES = {
     "en",
     "hi",
     "kn",
+    "ne",
     "ta",
     "te",
     "ml"
@@ -44,38 +45,22 @@ def validate_language(language: str) -> str:
 
 
 def detect_intent(query: str, language: str = "en") -> str:
+    """Rough topic of the (English) question, shown in logs and returned by /query."""
+    q = query.lower()
 
-    query_lower = query.lower()
-
-    # English intent detection for now
-    if "how" in query_lower:
-        return "procedure"
-
-    if any(word in query_lower for word in [
-        "where",
-        "location",
-        "located"
-    ]):
-        return "location"
-
-    if any(word in query_lower for word in [
-        "when",
-        "timing",
-        "hours",
-        "open",
-        "close"
-    ]):
-        return "operating_hours"
-
-    if any(word in query_lower for word in [
-        "use",
-        "usage",
-        "access",
-        "available",
-        "availability"
-    ]):
-        return "usage_or_availability"
-
+    rules = [
+        ("eligibility", ["eligible", "eligibility", "who can", "can i get", "qualify", "entitled"]),
+        ("documents_required", ["document", "papers", "certificate", "proof", "aadhaar", "form"]),
+        ("deadline", ["deadline", "last date", "within how many", "how many days", "how many hours", "cut-off", "cut off"]),
+        ("amount_or_benefit", ["how much", "amount", "subsidy", "benefit", "installment", "instalment", "premium", "limit", "interest"]),
+        ("registration", ["register", "registration", "form a society", "start a society", "new society"]),
+        ("governance", ["election", "board", "committee", "general body", "meeting", "audit", "bye-law", "byelaw", "dividend"]),
+        ("complaint_or_dispute", ["complaint", "dispute", "grievance", "fraud", "not received", "rejected"]),
+        ("procedure", ["how to", "how do", "how can", "process", "procedure", "steps", "apply"]),
+    ]
+    for intent, words in rules:
+        if any(w in q for w in words):
+            return intent
     return "general"
 
 
@@ -91,28 +76,16 @@ def detect_language(query: str) -> str:
 if __name__ == "__main__":
 
     test_queries = [
-        "Where is the robotics lab???",
-        "When is the library open?",
-        "Can I use the 3D printer?",
-        "How do I use the robotics equipment?"
+        "How do I register a new cooperative society?",
+        "Am I eligible for PM-KISAN if I am a retired pensioner?",
+        "Within how many hours must I report crop loss under PMFBY?",
+        "How much subsidy is given for drip irrigation?",
     ]
 
     for query in test_queries:
-
         cleaned = preprocess_query(query)
-
-        language = detect_language(cleaned)
-
-        # Validate detected language
-        language = validate_language(language)
-
-        intent = detect_intent(
-            cleaned,
-            language
-        )
-
-        print("Original Query :", query)
-        print("Cleaned Query  :", cleaned)
-        print("Language       :", language)
-        print("Intent         :", intent)
+        language = validate_language(detect_language(cleaned))
+        print("Query    :", query)
+        print("Language :", language)
+        print("Intent   :", detect_intent(cleaned, language))
         print()

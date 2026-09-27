@@ -160,6 +160,13 @@ async def speak_voice(request: TTSRequest):
         )
 
 
+# Live accuracy scoreboard page (/scoreboard) -- runs evaluate_rag.py on the server
+try:
+    from backend.routes.scoreboard import router as scoreboard_router
+    app.include_router(scoreboard_router)
+except Exception as e:
+    print(f"Scoreboard page not available: {e}")
+
 # KEEP THIS AT THE VERY END
 if query_router is not None:
     app.include_router(query_router)

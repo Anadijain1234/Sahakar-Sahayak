@@ -1,245 +1,282 @@
 # Sahakar Sahayak (सहकार सहायक) 🇮🇳
-### Multilingual Digital Assistant & Intelligence Platform for Indian Cooperative Societies
+### A multilingual, voice-enabled assistant for Indian cooperative societies and farmers
 
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI%200.141-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-61DAFB?logo=react&logoColor=black)](https://react.dev)
-[![SQLAlchemy](https://img.shields.io/badge/Database-SQLAlchemy%20%2B%20SQLite-D71F00?logo=sqlite&logoColor=white)](https://www.sqlalchemy.org/)
+[![Sarvam AI](https://img.shields.io/badge/LLM-Sarvam%20AI-6C3BD1)](https://www.sarvam.ai)
+[![Bhashini](https://img.shields.io/badge/Voice-Bhashini%20DPI-F97316)](https://bhashini.gov.in)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Sahakar Sahayak** is an intelligent, bilingual digital guide and kiosk application purpose-built for the Indian cooperative sector. Developed to align with the visionary initiatives of the **Ministry of Cooperation, Government of India**, it empowers citizens, members, and administrators of **Primary Agricultural Credit Societies (PACS)**, state federations, and multi-state cooperative societies with instant legal, procedural, and governance guidance.
+**Sahakar Sahayak** answers questions about **cooperative societies** (registration, bye-laws, audits, elections, PACS schemes) and **farmer welfare schemes** (PM-KISAN, PMFBY crop insurance, Kisan Credit Card, PMKSY irrigation) in **English, Hindi, Kannada and Nepali** — typed or spoken, even in mixed language like *"PM Kisan yojane alli varshakke eshtu duddu sigutte?"*.
 
----
+Every answer tells the user **where it came from**: an official government PDF (with a clickable link to the exact page) or general guidance that should be confirmed with the cooperative office.
 
-## 🌟 Key Platform Capabilities
+- 🌐 **Live app:** https://sahakar-sahayak-frontend.onrender.com
+- 📊 **Live accuracy scoreboard:** https://sahakar-sahayak-4.onrender.com/scoreboard
+- ⚙️ **API docs (Swagger):** https://sahakar-sahayak-4.onrender.com/docs
 
-### 1. 🔐 Complete Dual-Factor OTP Verification & Authentication
-- **Two-Step Registration Flow**:
-  - Requires Full Name, Email Address, Indian Mobile Number (`+91` or 10-digit format), Password, User Type, and Preferred Language.
-  - Generates distinct, cryptographically secure 6-digit numeric OTPs for **Email** and **Phone**.
-  - **Zero Account Creation Before Verification**: In strict accordance with security best practices, user accounts are stored in an isolated `pending_registrations` table and **never** activated or written to the permanent `users` table until **both** Email and Phone OTPs have been verified.
-  - **Cryptographic OTP Hashing**: OTPs are hashed using salted PBKDF2-HMAC-SHA256. Raw OTPs are never stored in the database and never exposed in API responses.
-  - **Rate Limiting & Abuse Protection**: 5 maximum verification attempts per channel, 10-minute expiry, and a 60-second cooldown rate limit on resends.
-- **Dual-Identifier Login**:
-  - Users can authenticate using **either** their registered **Email** OR their registered **Phone Number** (`+91 9876543210` or `9876543210`) with their password.
-  - Only active, dual-verified accounts are permitted to authenticate.
-  - Clear, distinct error messaging for unregistered credentials (HTTP 404), wrong passwords (HTTP 401), or unverified accounts (HTTP 403).
-
-### 2. 🤖 Multilingual AI Cooperative Assistant (RAG & NLP)
-- Hybrid Retrieval-Augmented Generation (RAG) using BM25 and FAISS vector similarity over Indian cooperative statutes, bylaws, circulars, and official guidance.
-- Intent classification and language validation for English (`en`), Hindi (`hi`), Kannada (`kn`), and Nepali (`ne`).
-- Source transparency: Every answer provides verifiable citations to relevant sections and clauses.
-
-### 3. 🎙️ Regional Voice & Speech Engine
-- Real-time speech-to-text transcription and text-to-speech voice synthesis.
-- Built for digital kiosk deployments in rural and semi-urban cooperative banks and society offices.
-
-### 4. 📚 Cooperative Governance & Document Guide
-- Step-by-step documentation checklists for society registration, board elections, audit compliance, and dispute resolution.
-- Interactive bookmarking and exportable guidance summaries.
-
-### 5. ♿ Accessibility & Modern UI
-- Responsive design tailored for desktops, kiosks, and mobile screens.
-- Dark mode, light mode, high-contrast mode, and enlarged text options.
+> Hosted on free servers — if the app has been idle, the first answer can take up to a minute while the server wakes up.
 
 ---
 
-## 📸 Platform Interface & Verification Flow
+## ✨ What it does
 
-| 1. Landing Page | 2. Registration Form (Step 1) |
-| :---: | :---: |
-| <img src="docs/screenshots/01_landing_page.png" width="480" alt="Landing Page"/> | <img src="docs/screenshots/02_registration_page.png" width="480" alt="Registration Form"/> |
-
-| 3. Dual OTP Verification (Step 2) | 4. Dual Login (Email or Phone) |
-| :---: | :---: |
-| <img src="docs/screenshots/03_otp_verification_screen.png" width="480" alt="Dual OTP Verification Screen"/> | <img src="docs/screenshots/04_login_page.png" width="480" alt="Dual Login"/> |
-
-| 5. Interactive Dashboard | 6. Document Guidance & Checklists |
-| :---: | :---: |
-| <img src="docs/screenshots/05_dashboard_page.png" width="480" alt="Dashboard"/> | <img src="docs/screenshots/06_document_guidance.png" width="480" alt="Document Guidance"/> |
+| Feature | How it works |
+|---|---|
+| 🗣️ **Ask in your language** | Type or speak in English, Hindi, Kannada or Nepali — including mixed language, local dialect and spelling mistakes. Sarvam AI rewrites the question into clear English for searching, and answers back in the user's chosen language. |
+| 🔎 **Hybrid document search** | 11 official PDFs are split into ~2,650 passages. Each question is matched three ways: **keyword (BM25)**, **spelling-tolerant (3-letter word parts, so *kisan ≈ kishan*)** and **meaning (Cloudflare Workers AI, `bge-m3` embeddings)**. |
+| ✅ **Trust card on every answer** | 🟢 *Verified from official document* · 🟡 *Partly verified* · 🔵 *General guidance* — plus the exact PDF and page, one tap to open it. |
+| 📊 **Search report** | Tap to see the real numbers behind an answer: keyword %, spelling %, meaning %, final confidence, passages searched, candidates compared, search time and total response time. |
+| 🚫 **Stays on topic** | Questions about cricket, movies, politics etc. are politely refused. |
+| 🔊 **Voice in, voice out** | Speech-to-text with a 3-level fallback (**Sarvam → Bhashini → Google**) and text-to-speech (**Bhashini → Google**). |
+| 📤 **Share the full answer** | One tap shares the question, full answer and source link to WhatsApp (or any app on a phone). |
+| 🔐 **Secure sign-up** | Email **and** phone OTP verification, hashed OTPs, attempt limits, resend cooldown; the account is only created after both are verified. |
+| 🤖 **Telegram bot** | The same assistant on Telegram, with a language menu (Kannada / English / Hindi). |
 
 ---
 
-## 🏛️ System Architecture
+## 🧠 How an answer is produced
 
+```mermaid
+flowchart LR
+    A["Farmer asks<br/>(text or voice, any mix of<br/>Kannada / Hindi / English)"] --> B["Speech-to-text<br/>Sarvam → Bhashini → Google"]
+    A --> C
+    B --> C["Sarvam AI rewrites it<br/>as one clear English question"]
+    C --> D{"Hybrid search over<br/>~2,650 PDF passages"}
+    D --> D1["Keyword match<br/>(BM25)"]
+    D --> D2["Spelling-tolerant match<br/>(3-letter word parts)"]
+    D --> D3["Meaning match<br/>(Cloudflare bge-m3)"]
+    D1 & D2 & D3 --> E["Best 6 passages<br/>+ real scores"]
+    E --> F["Sarvam AI writes a short answer<br/>in the user's language"]
+    F --> G["Trust card + source link<br/>+ search report + share"]
+    F --> H["Text-to-speech<br/>Bhashini → Google"]
+```
+
+**Scoring (per passage)**
+
+| Signal | Meaning | Weight in final score |
+|---|---|---|
+| Keyword match | share of the question's important words found exactly | 35% |
+| Spelling-tolerant match | share of the question's 3-letter word parts found | 15% |
+| Meaning match | Cloudflare `bge-m3` similarity, scaled 0–100% | 50% |
+
+A passage is only used if its keyword **or** meaning match is strong enough. If nothing qualifies, the answer is labelled *General guidance* and no source is shown — the app never pretends an answer came from a document when it didn't.
+
+**Resilience:** if Cloudflare is unavailable, search continues with keyword + spelling only. If Sarvam's safety filter rejects a request, it retries once without the document text, and the user only ever sees a friendly message — never an error dump.
+
+---
+
+## 📊 Accuracy scoreboard
+
+`evaluate_rag.py` runs **24 test questions** (13 farmer-scheme, 8 cooperative-law, 2 mixed-language, 3 off-topic). Every expected answer was checked by hand against the official PDFs.
+
+Baseline (search only, meaning search off, no AI — the harshest setting):
+
+| Metric | Result |
+|---|---|
+| Correct document ranked #1 (Hit@1) | 80.95% |
+| Correct document in top 3 (Hit@3) | 90.48% |
+| Correct document among the 6 passages sent to the AI (Hit@6) | 95.24% |
+| Mean reciprocal rank (MRR) | 0.8690 |
+| Exact page found | 77.78% |
+| Average search time | ~14 ms |
+| **Overall** | **22 / 24 (91.67%)** |
+
+**See it live, no setup:** open **https://sahakar-sahayak-4.onrender.com/scoreboard** and press *Run search test* (~2 s, free — no AI credits used). The server re-runs all questions against the official PDFs and shows every result.
+
+Or run it in a terminal:
+
+```bash
+python3 evaluate_rag.py          # search only, no API keys needed (~1 s)
+python3 evaluate_rag.py --full   # + Sarvam answers: fact accuracy, source accuracy, refusals, response time
+```
+
+Results are saved to `benchmark_results.json` and `benchmark_report.md`.
+
+---
+
+## 📚 Knowledge base (official documents)
+
+Stored in `backend/data/documents/` and served at `/documents/<file>` so every source link opens the real PDF on the right page.
+
+| Document | Topic |
+|---|---|
+| Karnataka Co-operative Societies Act, 1959 | State cooperative law |
+| Multi-State Co-operative Societies (Amendment) Act, 2023 | Central cooperative law |
+| Model Bye-laws for PACS (Ministry of Cooperation, 2023) | PACS membership, governance, audit |
+| Ministry of Cooperation — Initiatives Booklet (2025) | PACS computerisation, Jan Aushadhi, CSCs, storage |
+| RBI — Kisan Credit Card Directions for Rural Co-operative Banks (2026) | KCC limits, tenure, collateral |
+| PMFBY Operational Guidelines 2023 | Crop insurance, claims, loss reporting |
+| RWBCIS Revised Guidelines | Weather-based crop insurance |
+| Unified Package Insurance Scheme (UPIS) | Farmer package insurance |
+| PM-KISAN Revised Operational Guidelines | ₹6,000/year income support |
+| PMKSY Operational Guidelines | Irrigation / Per Drop More Crop |
+| New Schemes (summary) | Plain-language scheme summaries |
+
+---
+
+## 🏛️ Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Client["Frontend (React 19 + Vite)"]
-        UI[Interactive UI & Kiosk]
-        AuthUI[Registration & Dual OTP Modal]
-        VoiceUI[Voice Input / Audio Player]
+    subgraph Client["Frontend — React 19 + Vite (Render static site)"]
+        UI[Chat · Trust card · Search report · Share]
+        Voice[Mic input / Read aloud]
+        AuthUI[Sign-up with email + phone OTP]
     end
 
-    subgraph Backend["Backend (FastAPI)"]
-        RouterAuth["Auth Router (/api/auth)"]
-        RouterQuery["Query Router (/query)"]
-        RouterVoice["Voice Router (/voice)"]
-        
-        AuthService["Auth & Security Service (JWT, PBKDF2, OTP Hasher)"]
-        NotifService["Notification Service (SMTP Email + Twilio/SMS Gateway)"]
-        NLPService["NLP & Intent Classifier"]
-        RAGService["RAG Search (BM25 + FAISS)"]
+    subgraph Backend["Backend — FastAPI (Render web service)"]
+        Q["/query"]
+        V["/voice/transcribe · /voice/speak"]
+        AU["/api/auth/*"]
+        DOCS["/documents/* (PDFs)"]
+        RET[Hybrid retriever<br/>BM25 + word parts + meaning]
+        RAG[Answer service]
     end
 
-    subgraph Storage["Persistence & External Services"]
-        DB[(SQLite / Database)]
-        PendingDB[(Pending Registrations)]
-        VectorStore[(FAISS Vector Index)]
-        SMTP[SMTP Mail Server]
-        SMS[Twilio / SMS Gateway]
-        Gemini[Google Gemini AI]
+    subgraph External["External services"]
+        SARVAM[Sarvam AI<br/>LLM + speech-to-text]
+        CF[Cloudflare Workers AI<br/>bge-m3 embeddings]
+        BH[Bhashini DPI<br/>speech]
+        GG[Google speech<br/>fallback]
+        BREVO[Brevo email]
+        SMS[SMS gateway app]
+        DB[(SQLite)]
     end
 
-    UI -->|HTTP / API Requests| RouterQuery
-    AuthUI -->|Initiate & Verify OTP| RouterAuth
-    VoiceUI -->|Audio Stream| RouterVoice
-
-    RouterAuth --> AuthService
-    RouterAuth --> NotifService
-    RouterAuth --> DB
-    RouterAuth --> PendingDB
-
-    NotifService -->|Send Email OTP| SMTP
-    NotifService -->|Send SMS OTP| SMS
-
-    RouterQuery --> NLPService
-    RouterQuery --> RAGService
-    RAGService --> VectorStore
-    RAGService --> Gemini
+    UI --> Q --> RET --> CF
+    Q --> RAG --> SARVAM
+    Voice --> V --> SARVAM & BH & GG
+    AuthUI --> AU --> DB
+    AU --> BREVO & SMS
+    UI --> DOCS
 ```
 
 ---
 
-## 📡 API Reference
+## 📡 API reference
 
-### Authentication & OTP Verification Endpoints (`/api/auth`)
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/query` | Ask a question. Body: `{"query": "...", "language": "en\|hi\|kn\|ne"}` |
+| `POST` | `/voice/transcribe` | Audio file → text (Sarvam → Bhashini → Google) |
+| `POST` | `/voice/speak` | Text → audio (Bhashini → Google) |
+| `GET` | `/documents/{file}` | Opens an official PDF (add `#page=N`) |
+| `GET` | `/health` | Health check (used by the uptime pinger) |
+| `GET` | `/scoreboard` | Live accuracy scoreboard page (run tests from the browser) |
+| `GET` | `/scoreboard.json` | Last scoreboard result as JSON |
+| `POST` | `/api/auth/register/initiate` | Start sign-up, sends email + phone OTP |
+| `POST` | `/api/auth/register/verify-email` · `/verify-phone` | Verify each OTP |
+| `POST` | `/api/auth/register/resend-otp` | Resend OTP (60 s cooldown) |
+| `GET` | `/api/auth/register/status/{id}` | Verification progress |
+| `POST` | `/api/auth/login` | Log in with email **or** phone + password |
+| `GET` / `PUT` | `/api/auth/me` · `/api/auth/profile` | Profile (Bearer token) |
+| `POST` | `/api/auth/password-reset/send-otp` · `/confirm` | Password reset |
 
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register/initiate` | Step 1: Validate details, generate separate Email & Phone OTPs, send notifications | No |
-| `POST` | `/api/auth/register/verify-email` | Step 2a: Verify Email OTP; activates account if phone also verified | No |
-| `POST` | `/api/auth/register/verify-phone` | Step 2b: Verify Phone OTP; activates account if email also verified | No |
-| `POST` | `/api/auth/register/resend-otp` | Resend fresh OTP for email, phone, or both (60s cooldown) | No |
-| `GET` | `/api/auth/register/status/{id}` | Inspect verification progress and remaining attempts | No |
-| `POST` | `/api/auth/login` | Dual login using Email OR Phone Number + Password | No |
-| `GET` | `/api/auth/me` | Fetch authenticated user profile details | Yes (Bearer JWT) |
-| `PUT` | `/api/auth/profile` | Update profile information with uniqueness checks | Yes (Bearer JWT) |
+**`/query` response (main fields)**
 
-### Intelligence & Voice Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/query` | Process cooperative query via NLP & RAG retrieval | No |
-| `POST` | `/voice/transcribe` | Transcribe voice recording into text | No |
-| `POST` | `/voice/speak` | Synthesize regional text into spoken audio | No |
-| `GET` | `/health` | Service health status check | No |
-
----
-
-## ⚙️ Environment Configuration
-
-Create a `.env` file in the project root based on [`.env.example`](file:///.env.example):
-
-```env
-# Database & Security
-DATABASE_URL=sqlite:///backend/data/sahakar_sahayak.db
-JWT_SECRET=your-secure-jwt-secret-key
-
-# Email Notification Service (SMTP)
-# If left blank, the system automatically logs OTPs to the console in development
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-SMTP_FROM_EMAIL=noreply@sahakarsahayak.gov.in
-SMTP_USE_TLS=true
-
-# SMS Notification Service
-# Option A: Twilio
-TWILIO_ACCOUNT_SID=
-TWILIO_AUTH_TOKEN=
-TWILIO_FROM_NUMBER=
-
-# Option B: Generic SMS Gateway
-SMS_GATEWAY_URL=
-SMS_API_KEY=
-
-# AI & Voice Services (Optional)
-SARVAM_API_KEY=
-SARVAM_API_KEY=
-TELEGRAM_BOT_TOKEN=
+```json
+{
+  "answer": "Crop loss due to localized calamities must be reported within 72 hours ...",
+  "language": "en",
+  "trust_level": "verified",
+  "confidence": 0.8406,
+  "sources": [{ "document": "doc1.pdf", "page": 103, "link": "https://.../documents/doc1.pdf#page=103", "score": 84.06 }],
+  "search_report": {
+    "final_confidence": 84.06, "keyword_score": 66.67, "spelling_score": 82.5, "meaning_score": 61.23,
+    "pieces_searched": 2655, "pdfs_searched": 11, "candidates_compared": 36,
+    "search_time_ms": 13.81, "total_time_ms": 3421.5, "top_sources": ["..."]
+  }
+}
 ```
 
-> [!NOTE]
-> When SMTP or SMS credentials are not configured (such as during local development or testing), the system gracefully simulates delivery and prints formatted verification alerts directly to the backend console.
+---
+
+## ⚙️ Environment variables
+
+Set these in Render → Environment (never commit real values). See `.env.example`.
+
+| Variable | Used for |
+|---|---|
+| `SARVAM_API_KEY` | Sarvam AI (question rewriting, answers, speech-to-text) |
+| `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Meaning search (optional — word search works without it) |
+| `BHASHINI_USER_ID`, `BHASHINI_API_KEY` | Bhashini speech |
+| `JWT_SECRET` | Login tokens |
+| `EMAIL_API_KEY`, `SENDER_EMAIL` | Email OTP (Brevo) |
+| `GATEWAY_API_KEY` | Phone OTP (SMS gateway app) |
+| `DATABASE_URL` | Database (defaults to SQLite) |
+| `PUBLIC_BACKEND_URL` | Public backend address used in PDF links |
+| `TELEGRAM_BOT_TOKEN`, `API_URL` | Telegram bot |
+| `VITE_API_URL` (frontend) | Backend address for the React app |
+
+When email/SMS keys are missing (local development), OTPs are printed to the backend console instead.
 
 ---
 
-## 🚀 Local Development Setup
+## 🚀 Run locally
 
-### 1. Prerequisites
-- **Python 3.10+**
-- **Node.js 18+** and **npm**
-
-### 2. Backend Setup
 ```bash
-# Navigate to project root
-cd "d:/SIH HACKATHON/Sahakar-Sahayak"
-
-# Install Python dependencies
+# Backend
 pip install -r requirements.txt
-
-# Start the FastAPI backend server
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
-```
-The backend will be available at `http://127.0.0.1:8000`. Interactive Swagger API documentation is available at `http://127.0.0.1:8000/docs`.
+#   → http://127.0.0.1:8000/docs
 
-### 3. Frontend Setup
-```bash
-# In a separate terminal, install npm dependencies
+# Frontend (second terminal)
 npm install
-
-# Start the Vite development server
 npm run dev
+#   → http://localhost:5173
+
+# Telegram bot (optional, third terminal)
+python backend/telegram_bot.py
 ```
-The React frontend will be accessible at `http://localhost:5173`. Requests to `/api/*` are automatically proxied to port 8000.
+
+The search index (`backend/data/chunks_cache.json`) is rebuilt automatically whenever PDFs are added or removed.
 
 ---
 
-## 🧪 Automated Testing
-
-A comprehensive automated test suite validates the entire authentication, dual OTP verification, rate limiting, and security mechanisms:
+## 🧪 Tests
 
 ```bash
-python backend/test_auth.py
-```
-
-### Verified Test Scenarios (16/16 Passed):
-1. ✅ **Registration Initiation & Security**: Validates initiation, ensures OTPs are omitted from API responses.
-2. ✅ **Duplicate Email Rejection**: Rejects already-registered emails with HTTP 409 Conflict.
-3. ✅ **Duplicate Phone Rejection**: Rejects already-registered Indian phone numbers (`+91` and 10-digit formats) with HTTP 409.
-4. ✅ **Email OTP Verification**: Successfully verifies email factor while keeping phone pending.
-5. ✅ **Phone OTP Verification & Activation**: Verifies second factor, transfers account to permanent table, and issues JWT token.
-6. ✅ **Strict Pre-Verification Isolation**: Confirms user does NOT exist in permanent table and CANNOT log in until both factors are verified.
-7. ✅ **Incorrect OTP Handling**: Rejects invalid OTP and decrements remaining attempt counter.
-8. ✅ **Attempt Limit Exhaustion**: Rejects further OTP attempts after 5 failures with HTTP 429 Too Many Requests.
-9. ✅ **Expired OTP Handling**: Rejects verification when OTP validity has expired.
-10. ✅ **Resend OTP & Cooldown**: Enforces 60-second rate-limiting cooldown between resend requests.
-11. ✅ **Dual Login (Email & Phone)**: Successfully authenticates using either Email or Phone Number with password.
-12. ✅ **Incorrect Password Rejection**: Rejects invalid credentials with HTTP 401 Unauthorized.
-13. ✅ **Unregistered Credentials**: Rejects non-existent accounts with HTTP 404 Not Found.
-14. ✅ **Authenticated Endpoints**: Validates `/api/auth/me` and `/api/auth/profile` with Bearer tokens.
-15. ✅ **Alternative Verification Order**: Verifies phone OTP first and email OTP second seamlessly.
-16. ✅ **Inactive Account Protection**: Rejects login attempts for deactivated accounts.
-
-To validate the frontend build:
-```bash
-npm run build
+python3 backend/test_auth.py     # 16 sign-up / OTP / login security tests
+python3 test_search.py           # quick look at search scores for sample questions
+python3 evaluate_rag.py          # accuracy scoreboard (see above)
+npm run build                    # frontend build check
 ```
 
 ---
 
-## 👥 Contributors & Acknowledgements
+## 📁 Project structure
 
-Developed as part of the **Smart India Hackathon (SIH)** initiative under the theme of **Cooperative Intelligence & Digital Governance**. Dedicated to modernizing India's cooperative grassroots movement.
+```
+backend/
+  main.py                  FastAPI app, voice endpoints, PDF serving
+  routes/query.py          /query pipeline
+  routes/auth.py           sign-up, OTP, login
+  routes/scoreboard.py     live /scoreboard page
+  services/rag_service.py  question rewriting, answer, trust level, search report
+  services/retriever.py    hybrid search (BM25 + word parts + Cloudflare meaning)
+  services/nlp_service.py  cleaning, language check, intent
+  services/auth_service.py passwords, OTPs, JWT, email/SMS dispatch
+  data/documents/          official PDFs
+  telegram_bot.py          Telegram bot
+anadi_voice_engine.py      speech-to-text / text-to-speech with fallbacks
+src/
+  pages/Chat.jsx           chat screen
+  components/chat/AnswerFooter.jsx  trust card, share, search report
+evaluate_rag.py            accuracy scoreboard
+test_search.py             search smoke test
+```
+
+---
+
+## 🛣️ Limitations & next steps
+
+- Knowledge base covers Karnataka + central cooperative law; other states' Acts can be added by dropping PDFs into `backend/data/documents/`.
+- Scanned (image-only) PDFs can't be read yet — OCR is a planned addition.
+- Planned: state selection for state-specific rules, an admin dashboard of common questions by district, and a "talk to a cooperative officer" hand-off for disputes and complaints.
+
+---
+
+## 🙏 Acknowledgements
+
+Built for the **Smart India Hackathon (SIH)**. Uses India's **Bhashini** language platform and **Sarvam AI**. Official documents from the Ministry of Cooperation, Ministry of Agriculture & Farmers Welfare, the Reserve Bank of India, and the Government of Karnataka.

@@ -3,13 +3,13 @@ import { useLocation } from 'react-router-dom';
 import { useAuth, useLanguage, useAppData } from '../context/AppContext';
 import { LayoutWrapper } from '../components/layout/LayoutWrapper';
 import { ChatMessage } from '../components/chat/ChatMessage';
+import { AnswerFooter } from '../components/chat/AnswerFooter';
 import { ChatInput } from '../components/chat/ChatInput';
 import { SuggestionChip } from '../components/chat/SuggestionChip';
 import { LoadingIndicator } from '../components/common/LoadingIndicator';
 import { chatService } from '../services/chatService';
 import { Logo } from '../components/common/Logo';
-// Added Volume2 icon for the Read Aloud button
-import { MessageSquare, ArrowRight, CornerDownLeft, Sparkles, QrCode, Volume2 } from 'lucide-react';
+import { ArrowRight, CornerDownLeft, Sparkles } from 'lucide-react';
 
 export const Chat = () => {
   const { t, language } = useLanguage();
@@ -116,7 +116,9 @@ export const Chat = () => {
         action_url: response.action_url,
         qr_code_base64: response.qr_code_base64,
         confidence: response.confidence,
-        answer_source: response.answer_source
+        answer_source: response.answer_source,
+        trust_level: response.trust_level,
+        search_report: response.search_report
       };
       addChatMessage(chatId, assistantMsg);
     } catch (err) {
@@ -164,7 +166,9 @@ export const Chat = () => {
         action_url: response.action_url,
         qr_code_base64: response.qr_code_base64,
         confidence: response.confidence,
-        answer_source: response.answer_source
+        answer_source: response.answer_source,
+        trust_level: response.trust_level,
+        search_report: response.search_report
       };
 
       addChatMessage(chatId, assistantMsg);
@@ -229,65 +233,16 @@ export const Chat = () => {
                   <ChatMessage
                     message={msg}
                     conversationCategory={activeChat?.category || "General"}
+                    footer={msg.sender === 'assistant' ? (
+                      <AnswerFooter
+                        message={msg}
+                        question={idx > 0 && messages[idx - 1]?.sender === 'user' ? messages[idx - 1].text : ''}
+                        language={language}
+                        onReadAloud={playReadAloud}
+                        isPlayingAudio={isPlayingAudio}
+                      />
+                    ) : null}
                   />
-                  
-                  {msg.sender === 'assistant' && (
-                    <div className="flex flex-col items-start mt-3 sm:ml-12 pl-4">
-                      
-                      {/* NEW BUTTON: Read Aloud Trigger */}
-                      <button
-                        onClick={() => playReadAloud(msg.text)}
-                        disabled={isPlayingAudio}
-                        className="mb-3 flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-300 rounded-full text-xs font-bold transition-colors shadow-sm disabled:opacity-50"
-                      >
-                        <Volume2 className="h-3.5 w-3.5" />
-                        {isPlayingAudio ? "Playing Voice..." : "Read Aloud"}
-                      </button>
-
-                      {/* HOW SURE WE ARE (real match score from the search) */}
-                      {msg.answer_source === 'documents' && typeof msg.confidence === 'number' && (
-                        <p className="mb-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                          ✅ Found in official documents · {Math.round(msg.confidence * 100)}% match
-                        </p>
-                      )}
-                      {msg.answer_source === 'general' && (
-                        <p className="mb-3 text-xs font-semibold text-amber-700 dark:text-amber-300">
-                          ℹ️ General guidance, not from an official document. Please confirm with your cooperative office.
-                        </p>
-                      )}
-
-                      {/* HIGHLY VISIBLE GREEN CITATION & QR CODE BLOCK */}
-                      {(msg.sources?.length > 0 || msg.qr_code_base64) && (
-                        <div className="border-l-4 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10 p-4 rounded-r-lg shadow-sm w-full max-w-sm">
-                          
-                          {msg.sources && msg.sources.length > 0 && (
-                            <div className="mb-4">
-                              <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">
-                                Verified Official Source
-                              </p>
-                              <a href={msg.sources[0].link || undefined} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-2 underline">
-                                📄 {msg.sources[0].documentName} {msg.sources[0].provision ? `(${msg.sources[0].provision})` : ''}
-                              </a>
-                            </div>
-                          )}
-                          
-                          {msg.qr_code_base64 && (
-                            <div className="mt-1 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center gap-2 shadow-sm">
-                              <p className="text-[12px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 uppercase tracking-wide">
-                                <QrCode className="h-4 w-4 text-emerald-600" />
-                                Scan for WhatsApp Receipt
-                              </p>
-                              <img 
-                                src={`data:image/png;base64,${msg.qr_code_base64}`} 
-                                alt="WhatsApp QR Code" 
-                                className="w-36 h-36 rounded-lg shadow-sm border border-slate-200 bg-white p-1"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               ))}
 

@@ -1,10 +1,9 @@
 import React from 'react';
 import { useLanguage, useAppData } from '../../context/AppContext';
-import { SourceCard } from './SourceCard';
 import { Logo } from '../common/Logo';
 import { Bookmark, BookmarkCheck, CheckSquare, AlertTriangle, Scale, ExternalLink } from 'lucide-react';
 
-export const ChatMessage = ({ message, conversationCategory = "General Guidance" }) => {
+export const ChatMessage = ({ message, conversationCategory = "General Guidance", footer = null }) => {
   const { t } = useLanguage();
   const { toggleSaveAnswer, isAnswerSaved } = useAppData();
   const isUser = message.sender === 'user';
@@ -140,19 +139,8 @@ export const ChatMessage = ({ message, conversationCategory = "General Guidance"
           </div>
         )}
 
-        {/* 5. Sources Cards Grid */}
-        {message.sources && message.sources.length > 0 && (
-          <div className="mt-5 border-t border-slate-200/80 dark:border-slate-800/80 pt-4">
-            <h5 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">
-              {t('relatedSources')}
-            </h5>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {message.sources.map((src, idx) => (
-                <SourceCard key={src.id || idx} source={src} />
-              ))}
-            </div>
-          </div>
-        )}
+        {/* 5. Trust line, source, actions and search report (see AnswerFooter.jsx) */}
+        {footer}
 
         {/* Footer timestamp */}
         <div className="mt-3.5 flex items-center justify-between">

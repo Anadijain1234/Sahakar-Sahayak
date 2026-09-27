@@ -16,10 +16,10 @@ How it works, in simple words:
                    CLOUDFLARE_API_TOKEN in the environment. If they are
                    missing or Cloudflare is down, search quietly keeps
                    working with the two word-based matches only.
-3. The scores are mixed, and the best 6 pieces are returned.
-4. Each piece gets a real score from 0 to 1 = how many of the important
-   words in the question were found in that piece (exactly or closely).
-   If even the best piece scores too low, nothing is returned, and the
+3. Every candidate piece gets three real scores (keyword, spelling,
+   meaning) and a weighted final score; the best 6 pieces are returned.
+4. A piece is only used if its keyword match or its meaning match is
+   strong enough. If no piece qualifies, nothing is returned, and the
    answer step falls back to Sarvam's general knowledge.
 
 No AI model runs on this server (Cloudflare does the meaning part), so it
@@ -32,6 +32,7 @@ import os
 import re
 import json
 import math
+import time
 from array import array
 from collections import Counter, defaultdict
 
@@ -56,10 +57,16 @@ CF_MODEL = "@cf/baai/bge-m3"
 CHUNK_SIZE = 800        # letters per piece (about one paragraph)
 CHUNK_OVERLAP = 150     # letters shared between neighbouring pieces, so no answer is cut in half
 MIN_RESULTS = 6         # always return at least this many pieces (if they pass the score check)
-MIN_SCORE = 0.50        # below this, the best piece isn't good enough -> use general knowledge
 WORD_WEIGHT = 0.6       # how much exact-word match counts (inside the word search)
 PART_WEIGHT = 0.4       # how much part-of-word match counts (inside the word search)
-MEANING_WEIGHT = 0.5    # how much meaning search counts vs word search when ranking
+BOOST_WEIGHT = 0.2      # how much official scheme names (keyword booster) help pick candidates
+SHORTLIST = 5           # candidates checked = SHORTLIST x 6 from words + the same from meaning
+# Final confidence = weighted mix of the three signals (weights add up to 1)
+FINAL_W_KEYWORD = 0.35  # exact important words found
+FINAL_W_SPELLING = 0.15 # 3-letter word parts found (spelling-tolerant)
+FINAL_W_MEANING = 0.50  # same meaning (Cloudflare)
+INCLUDE_KEYWORD = 0.50  # a piece is used if keyword match >= this ...
+INCLUDE_MEANING = 0.50  # ... or scaled meaning match >= this
 MEANING_LOW = 0.45      # Cloudflare similarity at/below this = "not related" (score 0)
 MEANING_HIGH = 0.75     # Cloudflare similarity at/above this = "very related" (score 1)
 EMBED_BATCH = 50        # pieces sent to Cloudflare per request when building
@@ -306,46 +313,38 @@ def _load_or_build_vectors(signature) -> None:
         _vectors = None
 
 
-def _meaning_scores(query: str) -> dict:
-    """piece id -> 0..1 meaning score for this question. Empty if meaning search is off or fails."""
+def _meaning_similarities(query: str):
+    """Cloudflare similarity (-1..1, usually 0.2-0.8) of the question to EVERY piece,
+    as a numpy array. None if meaning search is off or Cloudflare fails."""
     if _vectors is None:
-        return {}
+        return None
     try:
         q = _embed([query], timeout=QUERY_TIMEOUT)[0]
     except Exception as e:
         print(f"[RETRIEVER] ⚠️ Meaning search skipped for this question: {e}")
-        return {}
-    sims = _vectors @ q
-    top = np.argsort(-sims)[:40]
-    span = MEANING_HIGH - MEANING_LOW
-    return {int(i): float(min(1.0, max(0.0, (sims[i] - MEANING_LOW) / span))) for i in top}
+        return None
+    return _vectors @ q
 
 
-def _similar(a: str, b: str) -> bool:
-    """True if two words are close spellings of each other (share most of their 3-letter parts)."""
-    if a == b:
-        return True
-    if len(a) < 5 or len(b) < 5:
-        return False          # short words must match exactly (avoids "cup" ~ "cap")
-    if abs(len(a) - len(b)) > 3:
-        return False
-    pa, pb = set(word_parts(a)), set(word_parts(b))
-    return len(pa & pb) / len(pa | pb) >= 0.5
+def _scale_meaning(sim: float) -> float:
+    """Turn a raw Cloudflare similarity into 0..1 (MEANING_LOW -> 0, MEANING_HIGH -> 1)."""
+    return min(1.0, max(0.0, (sim - MEANING_LOW) / (MEANING_HIGH - MEANING_LOW)))
 
 
-def _match_score(query_words: list, text: str) -> float:
-    """0 to 1: how many of the question's important words appear in this piece.
-    An exact match counts fully, a close spelling counts 0.8."""
+def _exact_keyword_score(query_words: list, text: str) -> float:
+    """0 to 1: share of the question's important words found EXACTLY in this piece."""
     if not query_words:
         return 0.0
     piece_words = set(tokenize(text))
-    total = 0.0
-    for qw in query_words:
-        if qw in piece_words:
-            total += 1.0
-        elif any(_similar(qw, pw) for pw in piece_words):
-            total += 0.8
-    return total / len(query_words)
+    return sum(1 for w in query_words if w in piece_words) / len(query_words)
+
+
+def _spelling_score(query_parts: set, text: str) -> float:
+    """0 to 1: share of the question's 3-letter word parts found in this piece.
+    Rewards close spellings (kishan ~ kisan) with partial credit."""
+    if not query_parts:
+        return 0.0
+    return len(query_parts & set(part_tokens(text))) / len(query_parts)
 
 
 def _normalise(score_map: dict) -> dict:
@@ -355,61 +354,117 @@ def _normalise(score_map: dict) -> dict:
     return {k: v / top for k, v in score_map.items()}
 
 
-def retrieve_documents(query: str, top_k: int = 3, threshold: float = MIN_SCORE) -> list:
-    """Find the best-matching PDF pieces for a question.
-    Returns a list of {"document", "page", "text", "similarity_score"} (score 0-1),
-    or an empty list if nothing matches well enough."""
+def search(query: str, top_k: int = MIN_RESULTS, boost_terms: str = ""):
+    """Full hybrid search. Returns (results, stats).
+
+    query       : the clean English question (used for ALL scores)
+    boost_terms : official scheme names from the keyword booster; they only help
+                  pick candidate pieces and are NOT counted in any score.
+
+    results: best PDF pieces, each with
+        document, page, text,
+        keyword_score  (0-1, exact important words found),
+        spelling_score (0-1, 3-letter word parts found),
+        meaning_score  (raw Cloudflare similarity, or None if unavailable),
+        meaning_scaled (0-1 version of meaning_score),
+        final_score    (0-1 weighted mix, used for ranking),
+        similarity_score (same as final_score, kept for older code)
+    stats: numbers for the on-screen "Search report".
+    """
+    started = time.perf_counter()
+    stats = {
+        "pieces_searched": len(chunks),
+        "pdfs_searched": len(set(c["document"] for c in chunks)) if chunks else 0,
+        "candidates_compared": 0,
+        "meaning_available": False,
+        "search_time_ms": 0.0,
+    }
+
     if _word_index is None:
         build_or_load_index()
+        stats["pieces_searched"] = len(chunks)
+        stats["pdfs_searched"] = len(set(c["document"] for c in chunks)) if chunks else 0
     if _word_index is None or not chunks:
-        return []
+        return [], stats
 
     top_k = max(top_k, MIN_RESULTS)
     query_words = list(dict.fromkeys(tokenize(query)))   # unique, in order
     if not query_words:
-        return []
+        return [], stats
+    query_parts = set(part_tokens(query))
 
+    boost_words = [w for w in dict.fromkeys(tokenize(boost_terms or "")) if w not in query_words]
+
+    # 1) Word search (BM25 on whole words + BM25 on 3-letter parts).
+    #    Boost words get a small weight so they can't push out pieces that match the real question.
     word_scores = _normalise(_word_index.scores(query_words))
-    part_scores = _normalise(_part_index.scores(part_tokens(query)))
-    meaning = _meaning_scores(query)          # {} if Cloudflare is off/unavailable
-
+    part_scores = _normalise(_part_index.scores(list(query_parts)))
+    boost_scores = _normalise(_word_index.scores(boost_words)) if boost_words else {}
     word_rank = {}
-    for doc_id in set(word_scores) | set(part_scores):
-        word_rank[doc_id] = WORD_WEIGHT * word_scores.get(doc_id, 0.0) + PART_WEIGHT * part_scores.get(doc_id, 0.0)
+    for doc_id in set(word_scores) | set(part_scores) | set(boost_scores):
+        word_rank[doc_id] = (WORD_WEIGHT * word_scores.get(doc_id, 0.0)
+                             + PART_WEIGHT * part_scores.get(doc_id, 0.0)
+                             + BOOST_WEIGHT * boost_scores.get(doc_id, 0.0))
 
-    # Shortlist = best by word search + best by meaning search
-    shortlist = set(sorted(word_rank, key=word_rank.get, reverse=True)[: top_k * 3])
-    shortlist |= set(sorted(meaning, key=meaning.get, reverse=True)[: top_k * 3])
+    # 2) Meaning search (Cloudflare)
+    sims = _meaning_similarities(query)
+    meaning_on = sims is not None
+    stats["meaning_available"] = meaning_on
 
+    # 3) Shortlist = best by words + best by meaning
+    shortlist = set(sorted(word_rank, key=word_rank.get, reverse=True)[: top_k * SHORTLIST])
+    if meaning_on:
+        shortlist |= set(int(i) for i in np.argsort(-sims)[: top_k * SHORTLIST])
+    stats["candidates_compared"] = len(shortlist)
+
+    # 4) Score every candidate on all three signals
     scored = []
     for doc_id in shortlist:
-        match = _match_score(query_words, chunks[doc_id]["text"])   # 0-1: question words found
-        sem = meaning.get(doc_id, 0.0)                              # 0-1: same meaning
-        if meaning:
-            # Score shown to users: counts either kind of match, rewards both
-            final = max(match, sem, MEANING_WEIGHT * sem + (1 - MEANING_WEIGHT) * match + 0.1 * min(match, sem))
-            final = min(final, 1.0)
+        text = chunks[doc_id]["text"]
+        kw = _exact_keyword_score(query_words, text)
+        sp = _spelling_score(query_parts, text)
+        if meaning_on:
+            raw = float(sims[doc_id])
+            ms = _scale_meaning(raw)
+            final = FINAL_W_KEYWORD * kw + FINAL_W_SPELLING * sp + FINAL_W_MEANING * ms
+            keep = kw >= INCLUDE_KEYWORD or ms >= INCLUDE_MEANING
         else:
-            final = match
-        scored.append((final, word_rank.get(doc_id, 0.0) + sem, doc_id, match, sem))
+            raw, ms = None, 0.0
+            final = 0.7 * kw + 0.3 * sp
+            keep = kw >= INCLUDE_KEYWORD
+        if keep:
+            scored.append((final, word_rank.get(doc_id, 0.0), doc_id, kw, sp, raw, ms))
     scored.sort(reverse=True)
 
     results = []
-    for final, _rank, doc_id, match, sem in scored[:top_k]:
-        if final < threshold:
-            continue
+    for final, _rank, doc_id, kw, sp, raw, ms in scored[:top_k]:
         doc_data = dict(chunks[doc_id])
-        doc_data["similarity_score"] = round(final, 3)
-        doc_data["word_match"] = round(match, 3)
-        doc_data["meaning_match"] = round(sem, 3)
+        doc_data.update({
+            "keyword_score": round(kw, 4),
+            "spelling_score": round(sp, 4),
+            "meaning_score": round(raw, 4) if raw is not None else None,
+            "meaning_scaled": round(ms, 4),
+            "final_score": round(final, 4),
+            "similarity_score": round(final, 4),
+        })
         results.append(doc_data)
 
+    stats["search_time_ms"] = round((time.perf_counter() - started) * 1000, 2)
+
     if results:
-        print(f"[RETRIEVER] 🔎 Best match {results[0]['similarity_score']:.0%} "
-              f"(words {results[0]['word_match']:.0%}, meaning {results[0]['meaning_match']:.0%}) in "
-              f"{results[0]['document']} (page {results[0]['page']}); {len(results)} pieces returned.")
+        b = results[0]
+        meaning_txt = f"{b['meaning_score'] * 100:.2f}%" if b["meaning_score"] is not None else "off"
+        print(f"[RETRIEVER] 🔎 Best {b['final_score'] * 100:.2f}% | keyword {b['keyword_score'] * 100:.2f}% | "
+              f"spelling {b['spelling_score'] * 100:.2f}% | meaning {meaning_txt} | "
+              f"{b['document']} p.{b['page']} | {len(results)} pieces | {stats['search_time_ms']} ms")
     else:
-        print("[RETRIEVER] 🔎 No piece matched well enough -- using general knowledge.")
+        print(f"[RETRIEVER] 🔎 No piece matched well enough -- using general knowledge. ({stats['search_time_ms']} ms)")
+    return results, stats
+
+
+def retrieve_documents(query: str, top_k: int = 3, threshold: float = None) -> list:
+    """Older, simpler entry point (used by older code): just the pieces."""
+    results, _stats = search(query, top_k=top_k)
     return results
 
 
