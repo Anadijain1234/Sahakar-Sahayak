@@ -73,6 +73,24 @@ EMBED_BATCH = 50        # pieces sent to Cloudflare per request when building
 QUERY_TIMEOUT = 4       # seconds to wait for Cloudflare per question
 CACHE_VERSION = 2
 
+# Scheme routing: when a question clearly names a scheme or law, pieces from THAT
+# scheme's own PDF get a small ranking bonus, so its official document is shown
+# first. Right side = part of the PDF file name in backend/data/documents
+# (update it here if you rename a PDF).
+SCHEME_ROUTES = [
+    (r"\b(pm[-\s]?kisan|kisan samman|samman nidhi)\b", "PM-KISAN"),
+    (r"\b(pmfby|fasal bima|pradhan mantri fasal)\b", "doc1"),
+    (r"\b(rwbcis|weather[-\s]based)\b", "RWBCIS"),
+    (r"\b(upis|unified package)\b", "UPIS"),
+    (r"\b(kcc|kisan credit card)\b", "405MDD58"),
+    (r"\b(pmksy|krishi sinchayee|per drop more crop|micro[-\s]?irrigation)\b", "PMKSY"),
+    (r"\b(karnataka)\b", "11of1959"),
+    (r"\b(multi[-\s]?state|2023 amendment|amendment act,? 2023)\b", "247816"),
+    (r"\b(model bye[-\s]?laws?|byelaws?)\b", "Model Byelaws"),
+    (r"\b(jan aushadhi|common service cent(re|er)s?|computeri[sz]ation of pacs|pacs computeri[sz]ation)\b", "Initiatives"),
+]
+ROUTE_BONUS = 0.12      # ranking bonus for the named scheme's own PDF (does not change the shown score)
+
 STOPWORDS = {
     "the", "and", "for", "are", "was", "were", "with", "that", "this", "from", "what",
     "which", "who", "whom", "how", "when", "where", "why", "can", "does", "did", "has",
@@ -347,6 +365,16 @@ def _spelling_score(query_parts: set, text: str) -> float:
     return len(query_parts & set(part_tokens(text))) / len(query_parts)
 
 
+def _routed_documents(question: str) -> list:
+    """File-name parts of the scheme PDFs the question clearly names (may be empty)."""
+    q = (question or "").lower()
+    out = []
+    for pattern, doc_part in SCHEME_ROUTES:
+        if re.search(pattern, q) and doc_part not in out:
+            out.append(doc_part)
+    return out
+
+
 def _normalise(score_map: dict) -> dict:
     if not score_map:
         return {}
@@ -411,10 +439,18 @@ def search(query: str, top_k: int = MIN_RESULTS, boost_terms: str = ""):
     meaning_on = sims is not None
     stats["meaning_available"] = meaning_on
 
-    # 3) Shortlist = best by words + best by meaning
+    # 3) Shortlist = best by words + best by meaning (+ best pieces of a scheme PDF the question names)
     shortlist = set(sorted(word_rank, key=word_rank.get, reverse=True)[: top_k * SHORTLIST])
     if meaning_on:
         shortlist |= set(int(i) for i in np.argsort(-sims)[: top_k * SHORTLIST])
+    routed = _routed_documents(query)
+    stats["scheme_routing"] = routed
+    if routed:
+        in_routed = [i for i in range(len(chunks)) if any(d.lower() in chunks[i]["document"].lower() for d in routed)]
+        by_words = sorted((i for i in in_routed if i in word_rank), key=word_rank.get, reverse=True)[:10]
+        shortlist |= set(by_words)
+        if meaning_on:
+            shortlist |= set(sorted(in_routed, key=lambda i: -float(sims[i]))[:10])
     stats["candidates_compared"] = len(shortlist)
 
     # 4) Score every candidate on all three signals
@@ -433,11 +469,12 @@ def search(query: str, top_k: int = MIN_RESULTS, boost_terms: str = ""):
             final = 0.7 * kw + 0.3 * sp
             keep = kw >= INCLUDE_KEYWORD
         if keep:
-            scored.append((final, word_rank.get(doc_id, 0.0), doc_id, kw, sp, raw, ms))
+            bonus = ROUTE_BONUS if routed and any(d.lower() in chunks[doc_id]["document"].lower() for d in routed) else 0.0
+            scored.append((final + bonus, word_rank.get(doc_id, 0.0), doc_id, kw, sp, raw, ms, final))
     scored.sort(reverse=True)
 
     results = []
-    for final, _rank, doc_id, kw, sp, raw, ms in scored[:top_k]:
+    for _key, _rank, doc_id, kw, sp, raw, ms, final in scored[:top_k]:
         doc_data = dict(chunks[doc_id])
         doc_data.update({
             "keyword_score": round(kw, 4),

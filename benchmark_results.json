@@ -1,26 +1,26 @@
 {
   "summary": {
-    "generated_at": "2026-09-27 21:23",
+    "generated_at": "2026-09-27 21:38",
     "mode": "search+answers",
     "meaning_search": true,
     "pieces_indexed": 2655,
     "pdfs_indexed": 11,
     "questions": 26,
     "search": {
-      "hit_at_1": 82.61,
-      "hit_at_3": 95.65,
+      "hit_at_1": 100.0,
+      "hit_at_3": 100.0,
       "hit_at_6": 100.0,
-      "mrr": 0.8877,
+      "mrr": 1.0,
       "page_at_6": 80.0,
       "offtopic_rejection": 66.67,
-      "avg_search_ms": 164.19,
-      "p95_search_ms": 253.81
+      "avg_search_ms": 194.8,
+      "p95_search_ms": 409.22
     },
     "by_kind": {
       "scheme": {
         "questions": 13,
         "hit_at_6": 100.0,
-        "fact_accuracy": 84.62
+        "fact_accuracy": 92.31
       },
       "cooperative": {
         "questions": 8,
@@ -34,17 +34,17 @@
       }
     },
     "answers": {
-      "fact_accuracy": 91.3,
-      "source_accuracy": 82.61,
+      "fact_accuracy": 95.65,
+      "source_accuracy": 100.0,
       "refusal_accuracy": 100.0,
-      "verified_share": 60.87,
-      "avg_response_s": 1.85,
-      "p95_response_s": 2.17
+      "verified_share": 56.52,
+      "avg_response_s": 1.82,
+      "p95_response_s": 2.24
     },
     "overall": {
-      "passed": 21,
+      "passed": 25,
       "total": 26,
-      "score": 80.77
+      "score": 96.15
     }
   },
   "questions": [
@@ -62,34 +62,34 @@
         "6000"
       ],
       "english_question": "How much money does a farmer receive every year under PM-KISAN?",
-      "search_time_ms": 115.88,
+      "search_time_ms": 523.77,
       "pieces_returned": 6,
       "top_results": [
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 10,
-          "final": 60.0,
+          "final": 60.02,
           "keyword": 50.0,
-          "meaning": 63.47
+          "meaning": 63.48
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 5,
-          "final": 48.07,
+          "final": 48.06,
           "keyword": 50.0,
-          "meaning": 57.72
+          "meaning": 57.71
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 2,
-          "final": 44.73,
+          "final": 44.72,
           "keyword": 16.67,
-          "meaning": 64.12
+          "meaning": 64.11
         },
         {
           "document": "doc1.pdf",
           "page": 173,
-          "final": 35.75,
+          "final": 35.74,
           "keyword": 50.0,
           "meaning": 50.04
         },
@@ -98,7 +98,7 @@
           "page": 13,
           "final": 27.34,
           "keyword": 50.0,
-          "meaning": 42.46
+          "meaning": 42.45
         },
         {
           "document": "Model Byelaws 05.01.02023.pdf",
@@ -114,12 +114,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "A farmer receives Rs. 6000 per year under PM-KISAN, which is released in three installments of Rs. 2000 each every four months or trimester (April-July, August-November, and December-March).",
+      "answer": "Under PM-KISAN, a farmer receives a total of Rs. 6,000 per year, which is released in three installments of Rs. 2,000 each every four months or trimester (April-July, August-November, and December-March).",
       "trust_level": "verified",
       "shown_source": "RevisedPM-KISANOperationalGuidelines(English).pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1963.5,
+      "total_time_ms": 2309.15,
       "passed": true
     },
     {
@@ -135,44 +135,30 @@
         "2000",
         "three"
       ],
-      "english_question": "In how many installments is the PM-KISAN benefit paid, and what is the amount of each installment?",
-      "search_time_ms": 138.38,
-      "pieces_returned": 5,
+      "english_question": "In how many installments is the PM-KISAN benefit paid, and how much is each installment?",
+      "search_time_ms": 375.49,
+      "pieces_returned": 3,
       "top_results": [
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 3,
-          "final": 50.37,
-          "keyword": 50.0,
-          "meaning": 57.84
+          "final": 54.93,
+          "keyword": 60.0,
+          "meaning": 57.91
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 10,
-          "final": 49.55,
-          "keyword": 50.0,
-          "meaning": 57.88
+          "final": 54.36,
+          "keyword": 60.0,
+          "meaning": 57.56
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 5,
-          "final": 46.84,
-          "keyword": 50.0,
-          "meaning": 55.72
-        },
-        {
-          "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
-          "page": 11,
-          "final": 28.97,
-          "keyword": 50.0,
-          "meaning": 42.51
-        },
-        {
-          "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
-          "page": 11,
-          "final": 27.65,
-          "keyword": 50.0,
-          "meaning": 43.74
+          "final": 51.5,
+          "keyword": 60.0,
+          "meaning": 55.23
         }
       ],
       "rank": 1,
@@ -181,12 +167,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "The PM-KISAN benefit is paid in three installments of Rs. 2000/- each every four months, i.e., April-July, August-November, and December-March.",
+      "answer": "The PM-KISAN benefit of Rs. 6,000 per year is released to eligible farmers in three installments of Rs. 2,000 each. The installments are paid every four months, covering the periods of April-July, August-November, and December-March.",
       "trust_level": "partial",
       "shown_source": "RevisedPM-KISANOperationalGuidelines(English).pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1850.58,
+      "total_time_ms": 2141.91,
       "passed": true
     },
     {
@@ -202,36 +188,36 @@
         "10,000"
       ],
       "english_question": "Are retired pensioners eligible for PM-KISAN benefits?",
-      "search_time_ms": 125.87,
+      "search_time_ms": 409.22,
       "pieces_returned": 4,
       "top_results": [
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 3,
-          "final": 70.45,
+          "final": 70.43,
           "keyword": 60.0,
-          "meaning": 67.8
+          "meaning": 67.79
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 4,
-          "final": 56.76,
+          "final": 56.75,
           "keyword": 60.0,
           "meaning": 60.06
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 4,
-          "final": 50.98,
+          "final": 50.99,
           "keyword": 60.0,
-          "meaning": 57.06
+          "meaning": 57.07
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 4,
-          "final": 50.8,
+          "final": 50.82,
           "keyword": 60.0,
-          "meaning": 56.72
+          "meaning": 56.73
         }
       ],
       "rank": 1,
@@ -240,12 +226,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "No, retired pensioners are not eligible for PM-KISAN benefits if their monthly pension is Rs. 10,000 or more. The guidelines specifically exclude all superannuated or retired pensioners receiving a monthly pension of Rs. 10,000 or more, as well as all persons who paid Income Tax in the last assessment year, from receiving benefits under the scheme.",
+      "answer": "No, retired pensioners are not eligible for PM-KISAN benefits if their monthly pension is Rs. 10,000 or more. The scheme excludes all superannuated or retired pensioners whose monthly pension is Rs. 10,000 or more.",
       "trust_level": "verified",
       "shown_source": "RevisedPM-KISANOperationalGuidelines(English).pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 2253.87,
+      "total_time_ms": 2221.0,
       "passed": true
     },
     {
@@ -261,29 +247,29 @@
         "01.02.2019"
       ],
       "english_question": "What is the cut-off date for land ownership eligibility under PM-KISAN?",
-      "search_time_ms": 197.48,
+      "search_time_ms": 181.47,
       "pieces_returned": 6,
       "top_results": [
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 4,
-          "final": 63.17,
+          "final": 63.16,
           "keyword": 57.14,
-          "meaning": 63.75
+          "meaning": 63.74
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 5,
-          "final": 55.85,
+          "final": 55.83,
           "keyword": 42.86,
-          "meaning": 63.28
+          "meaning": 63.27
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 3,
-          "final": 53.6,
+          "final": 53.61,
           "keyword": 85.71,
-          "meaning": 51.31
+          "meaning": 51.32
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
@@ -293,18 +279,18 @@
           "meaning": 48.16
         },
         {
+          "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
+          "page": 4,
+          "final": 31.92,
+          "keyword": 57.14,
+          "meaning": 44.58
+        },
+        {
           "document": "doc1.pdf",
           "page": 61,
           "final": 36.92,
           "keyword": 71.43,
-          "meaning": 43.74
-        },
-        {
-          "document": "doc1.pdf",
-          "page": 62,
-          "final": 33.22,
-          "keyword": 57.14,
-          "meaning": 48.32
+          "meaning": 43.73
         }
       ],
       "rank": 1,
@@ -313,12 +299,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "The cut-off date for determining eligibility under PM-KISAN is 01.02.2019, and no changes to eligibility will be considered for the next five years. However, this date does not apply in cases where the transfer of land ownership occurs due to succession from the death of the landowner, as the eligibility is reassessed in such situations.",
+      "answer": "The cut-off date for determining eligibility under PM-KISAN is 01.02.2019. No changes to eligibility will be considered for the next 5 years based on this date, except in cases of land ownership transfer due to succession or death.",
       "trust_level": "verified",
       "shown_source": "RevisedPM-KISANOperationalGuidelines(English).pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 2121.18,
+      "total_time_ms": 1974.13,
       "passed": true
     },
     {
@@ -334,50 +320,50 @@
         "72"
       ],
       "english_question": "Within how many hours must a farmer report crop loss due to localized calamities under PMFBY?",
-      "search_time_ms": 138.7,
+      "search_time_ms": 125.15,
       "pieces_returned": 6,
       "top_results": [
         {
           "document": "doc1.pdf",
           "page": 107,
-          "final": 72.76,
+          "final": 72.78,
           "keyword": 66.67,
-          "meaning": 68.0
+          "meaning": 68.01
         },
         {
           "document": "doc1.pdf",
           "page": 109,
-          "final": 70.72,
+          "final": 70.74,
           "keyword": 77.78,
-          "meaning": 63.18
+          "meaning": 63.19
         },
         {
           "document": "doc1.pdf",
           "page": 102,
-          "final": 68.56,
+          "final": 68.55,
           "keyword": 66.67,
           "meaning": 64.75
         },
         {
           "document": "doc1.pdf",
           "page": 105,
-          "final": 66.04,
+          "final": 66.06,
           "keyword": 77.78,
-          "meaning": 60.37
+          "meaning": 60.38
         },
         {
           "document": "doc1.pdf",
           "page": 107,
-          "final": 65.03,
+          "final": 65.0,
           "keyword": 55.56,
-          "meaning": 65.15
+          "meaning": 65.13
         },
         {
           "document": "doc1.pdf",
           "page": 105,
-          "final": 64.38,
+          "final": 64.35,
           "keyword": 55.56,
-          "meaning": 66.2
+          "meaning": 66.18
         }
       ],
       "rank": 1,
@@ -386,12 +372,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": false,
-      "answer": "A farmer must report crop loss due to localized calamities within 72 hours from the occurrence of the peril through the Crop Insurance App, Krishi Rakshak Portal, helpline, dedicated toll-free number of the insurance company, or the concerned bank.",
+      "answer": "A farmer must report crop loss due to localized calamities within 72 hours from the occurrence of the peril.",
       "trust_level": "verified",
       "shown_source": "doc1.pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1767.46,
+      "total_time_ms": 1633.03,
       "passed": true
     },
     {
@@ -406,51 +392,51 @@
       "expected_facts": [
         "crop insurance app"
       ],
-      "english_question": "How can a farmer report crop loss under PMFBY, and through which app or helpline?",
-      "search_time_ms": 253.81,
+      "english_question": "How can a farmer report crop loss under PMFBY through an app or helpline?",
+      "search_time_ms": 400.2,
       "pieces_returned": 6,
       "top_results": [
         {
           "document": "doc1.pdf",
           "page": 116,
-          "final": 85.47,
+          "final": 86.17,
           "keyword": 87.5,
-          "meaning": 69.33
+          "meaning": 69.75
         },
         {
           "document": "doc1.pdf",
           "page": 113,
-          "final": 83.3,
+          "final": 83.12,
           "keyword": 62.5,
-          "meaning": 74.95
+          "meaning": 74.84
         },
         {
           "document": "doc1.pdf",
           "page": 107,
-          "final": 82.68,
+          "final": 83.11,
           "keyword": 87.5,
-          "meaning": 67.65
+          "meaning": 67.91
         },
         {
           "document": "doc1.pdf",
           "page": 98,
-          "final": 81.93,
+          "final": 82.21,
           "keyword": 75.0,
-          "meaning": 71.29
+          "meaning": 71.46
         },
         {
           "document": "doc1.pdf",
           "page": 114,
-          "final": 75.15,
+          "final": 75.54,
           "keyword": 75.0,
-          "meaning": 67.44
+          "meaning": 67.66
         },
         {
           "document": "doc1.pdf",
-          "page": 104,
-          "final": 74.21,
-          "keyword": 62.5,
-          "meaning": 69.5
+          "page": 105,
+          "final": 74.2,
+          "keyword": 75.0,
+          "meaning": 66.87
         }
       ],
       "rank": 1,
@@ -459,12 +445,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": false,
-      "answer": "A farmer can report crop loss under PMFBY by giving intimation within 72 hours through the Crop Insurance App or the Krishi Rakshak Portal & Helpline (Centralized Toll-Free Number 14447). They can also report through the bank, local agriculture department, or district officials, though the Crop Insurance App and Krishi Rakshak Portal are the primary modes of intimation.",
+      "answer": "Under PMFBY, a farmer must report crop loss within 72 hours through the Crop Insurance App or the Krishi Rakshak Portal & Helpline (Centralized Toll-Free Number 14447) as the first mode of intimation. This can be followed by reporting directly to the Insurance Company through its dedicated toll-free number, or through the concerned bank, local agriculture department, or district officials.",
       "trust_level": "verified",
       "shown_source": "doc1.pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 2033.9,
+      "total_time_ms": 2241.21,
       "passed": true
     },
     {
@@ -479,16 +465,37 @@
       "expected_facts": [
         "2 lakh"
       ],
-      "english_question": "Up to what amount are Kisan Credit Card loans given without collateral security?",
-      "search_time_ms": 164.55,
-      "pieces_returned": 1,
+      "english_question": "Up to what amount are Kisan Credit Card (KCC) loans given without collateral security?",
+      "search_time_ms": 144.13,
+      "pieces_returned": 4,
       "top_results": [
         {
           "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
           "page": 9,
-          "final": 51.18,
-          "keyword": 44.44,
-          "meaning": 61.23
+          "final": 61.37,
+          "keyword": 50.0,
+          "meaning": 65.98
+        },
+        {
+          "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
+          "page": 9,
+          "final": 56.47,
+          "keyword": 50.0,
+          "meaning": 62.43
+        },
+        {
+          "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
+          "page": 2,
+          "final": 41.5,
+          "keyword": 50.0,
+          "meaning": 54.37
+        },
+        {
+          "document": "doc1.pdf",
+          "page": 14,
+          "final": 42.84,
+          "keyword": 50.0,
+          "meaning": 55.17
         }
       ],
       "rank": 1,
@@ -497,13 +504,13 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "Kisan Credit Card (KCC) loans are given without collateral security up to ₹3 lakh. This applies to loans against hypothecation of crops or stock and involving tie-up arrangements for recovery. For loans above this limit, banks may require collateral security as per their credit policy and RBI guidelines.",
-      "trust_level": "partial",
+      "answer": "KCC loans up to ₹3 lakh are given without collateral security when they are against the hypothecation of crops or stock and involve tie-up arrangements for recovery. For loans above ₹2 lakh, banks decide the collateral security and margin requirements as per their credit policy.",
+      "trust_level": "verified",
       "shown_source": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
-      "fact_ok": false,
+      "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1739.6,
-      "passed": false
+      "total_time_ms": 1766.03,
+      "passed": true
     },
     {
       "id": "S08",
@@ -518,15 +525,15 @@
         "six years"
       ],
       "english_question": "What is the tenure of the KCC composite credit facility?",
-      "search_time_ms": 145.07,
+      "search_time_ms": 146.01,
       "pieces_returned": 6,
       "top_results": [
         {
           "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
           "page": 4,
-          "final": 81.21,
+          "final": 81.23,
           "keyword": 100.0,
-          "meaning": 63.73
+          "meaning": 63.74
         },
         {
           "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
@@ -538,28 +545,28 @@
         {
           "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
           "page": 5,
-          "final": 61.01,
+          "final": 60.99,
           "keyword": 80.0,
-          "meaning": 56.65
+          "meaning": 56.64
         },
         {
           "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
           "page": 7,
-          "final": 58.92,
+          "final": 58.95,
           "keyword": 60.0,
-          "meaning": 61.85
+          "meaning": 61.86
         },
         {
           "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
           "page": 9,
-          "final": 57.1,
+          "final": 57.12,
           "keyword": 80.0,
-          "meaning": 54.3
+          "meaning": 54.32
         },
         {
           "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
           "page": 2,
-          "final": 53.27,
+          "final": 53.28,
           "keyword": 80.0,
           "meaning": 52.29
         }
@@ -570,12 +577,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "The tenure of the KCC composite credit facility is six years. This applies to the term loan component for various types of activities and investments, depending on the bank's credit policy. If the nature of the investment involves a tenure longer than six years, the term loan may be treated as a separate facility outside the KCC framework.",
+      "answer": "Under the KCC Scheme, the composite credit facility has a tenure of six years. This applies to the term loan component for investment credit, which is repayable within six years depending on the type of activity and the bank's credit policy. If the investment involves a tenure longer than six years, the term loan is treated as a separate facility outside the KCC framework. The composite limit is fixed for a period of six years, and drawdowns are allowed based on the nature of the investment.",
       "trust_level": "verified",
       "shown_source": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1889.29,
+      "total_time_ms": 1973.86,
       "passed": true
     },
     {
@@ -590,65 +597,65 @@
       "expected_facts": [
         "one hectare"
       ],
-      "english_question": "Who is considered a marginal farmer according to the RBI guidelines for the Kisan Credit Card scheme?",
-      "search_time_ms": 254.45,
+      "english_question": "Who is a marginal farmer as per the RBI Kisan Credit Card directions?",
+      "search_time_ms": 181.21,
       "pieces_returned": 6,
       "top_results": [
         {
+          "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
+          "page": 1,
+          "final": 52.72,
+          "keyword": 71.43,
+          "meaning": 54.99
+        },
+        {
           "document": "doc1.pdf",
           "page": 14,
-          "final": 55.42,
-          "keyword": 40.0,
-          "meaning": 64.45
+          "final": 56.23,
+          "keyword": 42.86,
+          "meaning": 63.31
+        },
+        {
+          "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
+          "page": 2,
+          "final": 42.67,
+          "keyword": 57.14,
+          "meaning": 52.6
         },
         {
           "document": "doc1.pdf",
           "page": 12,
-          "final": 53.16,
-          "keyword": 50.0,
-          "meaning": 59.75
+          "final": 53.39,
+          "keyword": 57.14,
+          "meaning": 58.6
         },
         {
           "document": "doc1.pdf",
           "page": 167,
-          "final": 50.77,
-          "keyword": 30.0,
-          "meaning": 64.04
-        },
-        {
-          "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
-          "page": 1,
-          "final": 43.2,
-          "keyword": 50.0,
-          "meaning": 56.13
-        },
-        {
-          "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
-          "page": 6,
-          "final": 38.97,
-          "keyword": 50.0,
-          "meaning": 51.51
+          "final": 47.93,
+          "keyword": 28.57,
+          "meaning": 62.18
         },
         {
           "document": "doc1.pdf",
-          "page": 7,
-          "final": 31.56,
-          "keyword": 50.0,
-          "meaning": 47.62
+          "page": 28,
+          "final": 47.84,
+          "keyword": 57.14,
+          "meaning": 55.06
         }
       ],
-      "rank": 4,
-      "hit1": false,
-      "hit3": false,
+      "rank": 1,
+      "hit1": true,
+      "hit3": true,
       "hit6": true,
-      "rr": 0.25,
+      "rr": 1.0,
       "page_hit": false,
-      "answer": "I can only assist with cooperative society and farmer scheme questions.",
-      "trust_level": "refused",
-      "shown_source": null,
+      "answer": "The provided context does not contain any information defining who a marginal farmer is according to the RBI Kisan Credit Card directions.",
+      "trust_level": "partial",
+      "shown_source": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
       "fact_ok": false,
-      "source_ok": false,
-      "total_time_ms": 1656.83,
+      "source_ok": true,
+      "total_time_ms": 1655.95,
       "passed": false
     },
     {
@@ -664,51 +671,51 @@
         "10,000",
         "50,000"
       ],
-      "english_question": "What is the flexi KCC (Kisan Credit Card) credit limit for marginal farmers?",
-      "search_time_ms": 134.26,
+      "english_question": "What is the flexi KCC credit limit for marginal farmers?",
+      "search_time_ms": 209.6,
       "pieces_returned": 6,
       "top_results": [
         {
           "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
           "page": 6,
-          "final": 76.44,
-          "keyword": 75.0,
-          "meaning": 67.4
-        },
-        {
-          "document": "doc1.pdf",
-          "page": 14,
-          "final": 65.73,
-          "keyword": 62.5,
-          "meaning": 64.88
-        },
-        {
-          "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
-          "page": 13,
-          "final": 56.58,
-          "keyword": 50.0,
-          "meaning": 63.95
+          "final": 91.12,
+          "keyword": 100.0,
+          "meaning": 69.67
         },
         {
           "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
           "page": 5,
-          "final": 56.33,
-          "keyword": 50.0,
-          "meaning": 63.37
+          "final": 68.04,
+          "keyword": 66.67,
+          "meaning": 65.82
         },
         {
-          "document": "doc1.pdf",
-          "page": 167,
-          "final": 53.11,
+          "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
+          "page": 6,
+          "final": 60.64,
           "keyword": 50.0,
-          "meaning": 60.58
+          "meaning": 65.97
         },
         {
-          "document": "doc1.pdf",
-          "page": 62,
-          "final": 52.96,
+          "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
+          "page": 9,
+          "final": 56.97,
           "keyword": 50.0,
-          "meaning": 60.28
+          "meaning": 64.04
+        },
+        {
+          "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
+          "page": 9,
+          "final": 53.21,
+          "keyword": 50.0,
+          "meaning": 60.97
+        },
+        {
+          "document": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
+          "page": 20,
+          "final": 51.25,
+          "keyword": 50.0,
+          "meaning": 60.88
         }
       ],
       "rank": 1,
@@ -717,12 +724,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "The flexi KCC credit limit for marginal farmers is ₹10,000 to ₹50,000, as assessed by the bank without being tied to the value of the land.",
+      "answer": "The flexi KCC credit limit for marginal farmers is ₹10,000 to ₹50,000, assessed by the bank based on the crops grown and post-harvest warehouse receipts, without relating it to the value of the land.",
       "trust_level": "verified",
       "shown_source": "405MDD58E90A39C3D479CB0CF706F173BF58F.PDF",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1891.47,
+      "total_time_ms": 1817.45,
       "passed": true
     },
     {
@@ -739,22 +746,22 @@
         "70"
       ],
       "english_question": "What is the age limit for farmers to join the Unified Package Insurance Scheme?",
-      "search_time_ms": 161.88,
+      "search_time_ms": 147.51,
       "pieces_returned": 6,
       "top_results": [
         {
-          "document": "New Schemes-english_.pdf",
-          "page": 19,
-          "final": 67.56,
-          "keyword": 62.5,
-          "meaning": 64.98
-        },
-        {
           "document": "FINAL_UPISOGs_23.03.2016.pdf",
           "page": 3,
-          "final": 58.63,
+          "final": 58.62,
           "keyword": 50.0,
-          "meaning": 63.81
+          "meaning": 63.8
+        },
+        {
+          "document": "New Schemes-english_.pdf",
+          "page": 19,
+          "final": 67.59,
+          "keyword": 62.5,
+          "meaning": 64.99
         },
         {
           "document": "FINAL_UPISOGs_23.03.2016.pdf",
@@ -768,7 +775,7 @@
           "page": 18,
           "final": 44.58,
           "keyword": 62.5,
-          "meaning": 51.77
+          "meaning": 51.78
         },
         {
           "document": "FINAL_UPISOGs_23.03.2016.pdf",
@@ -778,26 +785,26 @@
           "meaning": 51.04
         },
         {
-          "document": "New Schemes-english_.pdf",
-          "page": 22,
-          "final": 43.72,
+          "document": "FINAL_UPISOGs_23.03.2016.pdf",
+          "page": 11,
+          "final": 37.54,
           "keyword": 50.0,
-          "meaning": 55.65
+          "meaning": 51.74
         }
       ],
-      "rank": 2,
-      "hit1": false,
+      "rank": 1,
+      "hit1": true,
       "hit3": true,
       "hit6": true,
-      "rr": 0.5,
+      "rr": 1.0,
       "page_hit": true,
-      "answer": "The age limit for farmers to join the Unified Package Insurance Scheme is 18 to 70 years.",
-      "trust_level": "verified",
-      "shown_source": "New Schemes-english_.pdf",
+      "answer": "Farmers between 18 and 70 years of age are eligible to join the Unified Package Insurance Scheme.",
+      "trust_level": "partial",
+      "shown_source": "FINAL_UPISOGs_23.03.2016.pdf",
       "fact_ok": true,
-      "source_ok": false,
-      "total_time_ms": 1566.87,
-      "passed": false
+      "source_ok": true,
+      "total_time_ms": 1646.59,
+      "passed": true
     },
     {
       "id": "S12",
@@ -811,44 +818,44 @@
       "expected_facts": [
         "55"
       ],
-      "english_question": "What subsidy do small and marginal farmers receive for micro-irrigation under PMKSY?",
-      "search_time_ms": 138.33,
+      "english_question": "What subsidy do small and marginal farmers receive for micro irrigation under PMKSY?",
+      "search_time_ms": 130.4,
       "pieces_returned": 5,
       "top_results": [
         {
           "document": "PMKSY_Official_Operational_Guidelines.pdf",
           "page": 2,
-          "final": 64.06,
+          "final": 64.46,
           "keyword": 75.0,
-          "meaning": 60.19
+          "meaning": 60.42
         },
         {
           "document": "PMKSY_Official_Operational_Guidelines.pdf",
           "page": 2,
-          "final": 55.5,
+          "final": 55.08,
           "keyword": 50.0,
-          "meaning": 62.14
+          "meaning": 61.88
         },
         {
           "document": "PMKSY_Official_Operational_Guidelines.pdf",
           "page": 1,
-          "final": 52.59,
+          "final": 53.2,
           "keyword": 50.0,
-          "meaning": 60.22
+          "meaning": 60.58
         },
         {
           "document": "PMKSY_Official_Operational_Guidelines.pdf",
           "page": 1,
-          "final": 52.55,
+          "final": 51.81,
           "keyword": 50.0,
-          "meaning": 60.2
+          "meaning": 59.76
         },
         {
           "document": "PMKSY_Official_Operational_Guidelines.pdf",
           "page": 1,
-          "final": 42.19,
+          "final": 42.22,
           "keyword": 25.0,
-          "meaning": 60.56
+          "meaning": 60.58
         }
       ],
       "rank": 1,
@@ -857,12 +864,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "Under the Per Drop More Crop (PDMC) component of PMKSY, small and marginal farmers receive a subsidy of 55% of the indicative unit costs for micro-irrigation. The funding for this subsidy is shared between the Central and State governments on a 60:40 ratio for general states, 90:10 for North Eastern and Himalayan states, and 100% for Union Territories. This financial assistance is disbursed directly to the farmer's bank account through Direct Benefit Transfer (DBT) linked to their Aadhaar-seeded profile, and a specific land parcel cannot claim this subsidy more than once within a 7-year window.",
+      "answer": "Small and marginal farmers receive a subsidy covering 55% of the indicative unit costs for micro-irrigation under PMKSY. The funding ratio between the central and state governments varies by region: 60:40 in general states, 90:10 in the North-East and Himalayan states, and 100% in Union Territories.",
       "trust_level": "verified",
       "shown_source": "PMKSY_Official_Operational_Guidelines.pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 2174.53,
+      "total_time_ms": 1830.69,
       "passed": true
     },
     {
@@ -878,9 +885,16 @@
         "90:10"
       ],
       "english_question": "What is the central and state funding ratio for North Eastern and Himalayan states under PMKSY?",
-      "search_time_ms": 134.16,
+      "search_time_ms": 147.74,
       "pieces_returned": 5,
       "top_results": [
+        {
+          "document": "PMKSY_Official_Operational_Guidelines.pdf",
+          "page": 2,
+          "final": 42.47,
+          "keyword": 55.56,
+          "meaning": 52.41
+        },
         {
           "document": "doc1.pdf",
           "page": 85,
@@ -891,16 +905,9 @@
         {
           "document": "doc1.pdf",
           "page": 42,
-          "final": 44.18,
+          "final": 44.16,
           "keyword": 77.78,
-          "meaning": 47.9
-        },
-        {
-          "document": "PMKSY_Official_Operational_Guidelines.pdf",
-          "page": 2,
-          "final": 42.45,
-          "keyword": 55.56,
-          "meaning": 52.4
+          "meaning": 47.89
         },
         {
           "document": "doc1.pdf",
@@ -912,24 +919,24 @@
         {
           "document": "doc1.pdf",
           "page": 42,
-          "final": 32.94,
+          "final": 32.95,
           "keyword": 55.56,
           "meaning": 46.87
         }
       ],
-      "rank": 3,
-      "hit1": false,
+      "rank": 1,
+      "hit1": true,
       "hit3": true,
       "hit6": true,
-      "rr": 0.3333333333333333,
+      "rr": 1.0,
       "page_hit": true,
-      "answer": "Under the Pradhan Mantri Krishi Sinchayee Yojana (PMKSY), specifically for the Per Drop More Crop (PDMC) component, the funding ratio for North Eastern and Himalayan states is 90:10 between the Central and State governments. This means the Centre bears 90% of the cost while the State covers 10%. This ratio applies to both small and marginal farmers as well as other farmers, and is consistent with the subsidy sharing pattern for these regions under the scheme.",
+      "answer": "Under PMKSY, the central and state funding ratio for North Eastern and Himalayan states is 90:10. This ratio applies to the PDMC component, where the Centre provides 90% and the State provides 10% of the indicative unit costs. For the YES-TECH and WINDS components, the sharing pattern is also 90:10 for North Eastern and Himalayan states and union territories. Additionally, for the premium subsidy under the insurance component, the Centre and State share the subsidy in a 90:10 ratio in these regions.",
       "trust_level": "partial",
-      "shown_source": "doc1.pdf",
+      "shown_source": "PMKSY_Official_Operational_Guidelines.pdf",
       "fact_ok": true,
-      "source_ok": false,
-      "total_time_ms": 2108.62,
-      "passed": false
+      "source_ok": true,
+      "total_time_ms": 2125.17,
+      "passed": true
     },
     {
       "id": "C01",
@@ -942,50 +949,50 @@
         "every year"
       ],
       "english_question": "How often must a cooperative society in Karnataka get its accounts audited?",
-      "search_time_ms": 196.23,
+      "search_time_ms": 151.2,
       "pieces_returned": 6,
       "top_results": [
         {
           "document": "11of1959(E).pdf",
           "page": 104,
-          "final": 79.26,
+          "final": 79.25,
           "keyword": 66.67,
-          "meaning": 71.86
+          "meaning": 71.85
         },
         {
           "document": "11of1959(E).pdf",
           "page": 18,
-          "final": 70.05,
+          "final": 70.07,
           "keyword": 50.0,
           "meaning": 69.45
         },
         {
           "document": "11of1959(E).pdf",
           "page": 108,
-          "final": 68.64,
+          "final": 68.66,
           "keyword": 66.67,
-          "meaning": 65.67
+          "meaning": 65.69
         },
         {
           "document": "11of1959(E).pdf",
           "page": 147,
-          "final": 68.5,
+          "final": 68.52,
           "keyword": 50.0,
-          "meaning": 67.75
+          "meaning": 67.76
         },
         {
           "document": "11of1959(E).pdf",
           "page": 104,
-          "final": 67.68,
+          "final": 67.69,
           "keyword": 50.0,
           "meaning": 68.6
         },
         {
           "document": "11of1959(E).pdf",
           "page": 28,
-          "final": 62.88,
+          "final": 62.9,
           "keyword": 66.67,
-          "meaning": 62.41
+          "meaning": 62.42
         }
       ],
       "rank": 1,
@@ -993,12 +1000,12 @@
       "hit3": true,
       "hit6": true,
       "rr": 1.0,
-      "answer": "A cooperative society in Karnataka must get its accounts audited at least once a year before the first of September following the close of the cooperative year. The general body of the society must appoint the auditor or auditing firm at its general meeting.",
+      "answer": "A cooperative society in Karnataka must get its accounts audited at least once every year, and this audit must be completed before the first of September following the close of the cooperative year.",
       "trust_level": "verified",
       "shown_source": "11of1959(E).pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1743.02,
+      "total_time_ms": 1612.57,
       "passed": true
     },
     {
@@ -1012,64 +1019,64 @@
         "election authority"
       ],
       "english_question": "Which authority conducts elections of multi-state cooperative societies after the 2023 amendment?",
-      "search_time_ms": 211.26,
+      "search_time_ms": 231.18,
       "pieces_returned": 6,
       "top_results": [
         {
+          "document": "247816.pdf",
+          "page": 9,
+          "final": 58.47,
+          "keyword": 50.0,
+          "meaning": 62.46
+        },
+        {
           "document": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
           "page": 20,
-          "final": 67.77,
+          "final": 67.76,
           "keyword": 70.0,
           "meaning": 62.71
         },
         {
+          "document": "247816.pdf",
+          "page": 1,
+          "final": 52.41,
+          "keyword": 40.0,
+          "meaning": 62.3
+        },
+        {
           "document": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
           "page": 20,
-          "final": 64.29,
+          "final": 64.31,
           "keyword": 60.0,
-          "meaning": 63.98
+          "meaning": 63.99
+        },
+        {
+          "document": "247816.pdf",
+          "page": 2,
+          "final": 49.33,
+          "keyword": 50.0,
+          "meaning": 57.72
         },
         {
           "document": "247816.pdf",
           "page": 9,
-          "final": 58.49,
+          "final": 47.41,
           "keyword": 50.0,
-          "meaning": 62.47
-        },
-        {
-          "document": "11of1959(E).pdf",
-          "page": 89,
-          "final": 54.15,
-          "keyword": 50.0,
-          "meaning": 60.74
-        },
-        {
-          "document": "247816.pdf",
-          "page": 1,
-          "final": 52.43,
-          "keyword": 40.0,
-          "meaning": 62.31
-        },
-        {
-          "document": "11of1959(E).pdf",
-          "page": 89,
-          "final": 50.95,
-          "keyword": 40.0,
-          "meaning": 61.67
+          "meaning": 55.45
         }
       ],
-      "rank": 3,
-      "hit1": false,
+      "rank": 1,
+      "hit1": true,
       "hit3": true,
       "hit6": true,
-      "rr": 0.3333333333333333,
-      "answer": "Following the 2023 amendment, the Cooperative Election Authority (CEA) conducts elections of multi-state cooperative societies. This authority was set up to strengthen governance, accountability, and the electoral process for free and fair elections. The multi-state cooperative society must inform the Authority six months before the expiry of the board's term, and the Authority may appoint a Returning Officer to conduct the elections.",
-      "trust_level": "verified",
-      "shown_source": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
+      "rr": 1.0,
+      "answer": "The Cooperative Election Authority (CEA) conducts elections of multi-state cooperative societies after the 2023 amendment. It was set up to strengthen governance and accountability, with a mandate to conduct free and fair elections. The Authority may also appoint a Returning Officer to conduct the elections and can issue directions to the board and society for compliance.",
+      "trust_level": "partial",
+      "shown_source": "247816.pdf",
       "fact_ok": true,
-      "source_ok": false,
-      "total_time_ms": 2027.23,
-      "passed": false
+      "source_ok": true,
+      "total_time_ms": 1939.88,
+      "passed": true
     },
     {
       "id": "C03",
@@ -1082,50 +1089,50 @@
         "rehabilitation"
       ],
       "english_question": "Which fund was created for the revival of sick multi-state cooperative societies under the 2023 amendment?",
-      "search_time_ms": 148.16,
+      "search_time_ms": 142.72,
       "pieces_returned": 6,
       "top_results": [
         {
           "document": "247816.pdf",
           "page": 11,
-          "final": 56.15,
+          "final": 56.13,
           "keyword": 60.0,
           "meaning": 58.94
         },
         {
-          "document": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
-          "page": 20,
-          "final": 50.23,
-          "keyword": 60.0,
-          "meaning": 55.68
-        },
-        {
           "document": "247816.pdf",
           "page": 11,
-          "final": 46.16,
+          "final": 46.14,
           "keyword": 50.0,
-          "meaning": 55.77
+          "meaning": 55.76
         },
         {
           "document": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
-          "page": 22,
-          "final": 38.96,
+          "page": 20,
+          "final": 50.25,
           "keyword": 60.0,
-          "meaning": 48.92
+          "meaning": 55.69
         },
         {
           "document": "247816.pdf",
           "page": 2,
-          "final": 36.37,
+          "final": 36.36,
           "keyword": 50.0,
-          "meaning": 49.61
+          "meaning": 49.6
+        },
+        {
+          "document": "247816.pdf",
+          "page": 21,
+          "final": 28.21,
+          "keyword": 50.0,
+          "meaning": 44.54
         },
         {
           "document": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
-          "page": 16,
-          "final": 29.13,
-          "keyword": 50.0,
-          "meaning": 45.41
+          "page": 22,
+          "final": 38.95,
+          "keyword": 60.0,
+          "meaning": 48.91
         }
       ],
       "rank": 1,
@@ -1133,12 +1140,12 @@
       "hit3": true,
       "hit6": true,
       "rr": 1.0,
-      "answer": "The Co-operative Rehabilitation, Reconstruction and Development Fund was created for the revival of sick multi-State co-operative societies under the 2023 amendment.",
+      "answer": "The Co-operative Rehabilitation, Reconstruction and Development Fund was created under the 2023 amendment for the revival of sick multi-state cooperative societies.",
       "trust_level": "partial",
       "shown_source": "247816.pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1746.65,
+      "total_time_ms": 1693.83,
       "passed": true
     },
     {
@@ -1153,30 +1160,30 @@
       "expected_facts": [
         "25"
       ],
-      "english_question": "What percentage of its net profit must a PACS transfer to its reserve fund every year under the model bye-laws?",
-      "search_time_ms": 172.75,
+      "english_question": "What percentage of net profit must a PACS transfer to its reserve fund every year under the model bye-laws?",
+      "search_time_ms": 146.71,
       "pieces_returned": 3,
       "top_results": [
         {
           "document": "Model Byelaws 05.01.02023.pdf",
           "page": 17,
-          "final": 45.25,
+          "final": 44.79,
           "keyword": 50.0,
-          "meaning": 56.51
+          "meaning": 56.23
         },
         {
           "document": "Model Byelaws 05.01.02023.pdf",
           "page": 17,
-          "final": 38.81,
+          "final": 38.75,
           "keyword": 50.0,
-          "meaning": 52.79
+          "meaning": 52.75
         },
         {
           "document": "11of1959(E).pdf",
           "page": 100,
-          "final": 33.09,
+          "final": 33.04,
           "keyword": 50.0,
-          "meaning": 48.92
+          "meaning": 48.9
         }
       ],
       "rank": 1,
@@ -1185,12 +1192,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "Under the model bye-laws, a PACS must transfer 25% of its net profit to its reserve fund every year. This is also consistent with the provisions of the Act, which mandates that a cooperative society transfer at least 25% of its net profit to the reserve fund annually.",
+      "answer": "Under the model bye-laws, the society must transfer 25% of its net profit to its reserve and surplus fund every year. This is also consistent with the provisions of the Act, which requires a co-operative society to transfer at least 25% of its net profits to the reserve fund. Additionally, 2% of the balance of net profits must be contributed to the Co-operative Education Fund.",
       "trust_level": "partial",
       "shown_source": "Model Byelaws 05.01.02023.pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1809.58,
+      "total_time_ms": 1960.61,
       "passed": true
     },
     {
@@ -1206,29 +1213,29 @@
         "25 times"
       ],
       "english_question": "What is the maximum borrowing limit of a PACS in relation to its paid-up share capital and reserves?",
-      "search_time_ms": 144.85,
+      "search_time_ms": 140.1,
       "pieces_returned": 3,
       "top_results": [
         {
           "document": "Model Byelaws 05.01.02023.pdf",
           "page": 17,
-          "final": 58.66,
+          "final": 58.64,
           "keyword": 66.67,
-          "meaning": 58.67
+          "meaning": 58.66
         },
         {
           "document": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
           "page": 9,
-          "final": 47.47,
+          "final": 47.49,
           "keyword": 22.22,
           "meaning": 65.22
         },
         {
           "document": "11of1959(E).pdf",
           "page": 144,
-          "final": 41.62,
+          "final": 41.64,
           "keyword": 55.56,
-          "meaning": 51.43
+          "meaning": 51.44
         }
       ],
       "rank": 1,
@@ -1237,12 +1244,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "The maximum outstanding borrowings of a society shall not at any time exceed 25 times of its paid-up share capital and reserves minus accumulated losses. This limit is specified in the Model Byelaws, and it aligns with the broader framework where the State Government's subscription in the share capital of any society under the Cooperative Credit Structure shall not exceed twenty-five percent of the total paid-up share capital.",
+      "answer": "The maximum outstanding borrowings of a cooperative society should not at any time exceed 25 times of its paid-up share capital and reserves minus accumulated losses, as per the Model Byelaws. Additionally, the State Government's subscription in the share capital of any society under the cooperative credit structure shall not exceed twenty-five percent of the total paid-up share capital of such society, as per the 1959 Act.",
       "trust_level": "partial",
       "shown_source": "Model Byelaws 05.01.02023.pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 2076.18,
+      "total_time_ms": 1994.94,
       "passed": true
     },
     {
@@ -1258,7 +1265,7 @@
         "general body"
       ],
       "english_question": "Who decides the rate of dividend in a PACS?",
-      "search_time_ms": 149.08,
+      "search_time_ms": 156.85,
       "pieces_returned": 6,
       "top_results": [
         {
@@ -1278,9 +1285,9 @@
         {
           "document": "doc1.pdf",
           "page": 65,
-          "final": 32.17,
+          "final": 32.18,
           "keyword": 50.0,
-          "meaning": 48.07
+          "meaning": 48.08
         },
         {
           "document": "11of1959(E).pdf",
@@ -1292,16 +1299,16 @@
         {
           "document": "11of1959(E).pdf",
           "page": 96,
-          "final": 27.93,
+          "final": 27.94,
           "keyword": 50.0,
-          "meaning": 45.53
+          "meaning": 45.54
         },
         {
           "document": "11of1959(E).pdf",
           "page": 100,
           "final": 27.73,
           "keyword": 50.0,
-          "meaning": 41.4
+          "meaning": 41.41
         }
       ],
       "rank": 1,
@@ -1310,12 +1317,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "According to the Model Byelaws, the rate of dividend to be declared by the Society shall be decided in the General Body Meeting. Additionally, the Cooperative Societies Act mentions that the rate at which dividend may be paid by co-operative societies is a matter to be specified in the bye-laws of the society.",
+      "answer": "The rate of dividend in a PACS is decided in the General Body Meeting of the Society, as per the Model Byelaws. Additionally, the Co-operative Societies Act, 1959, empowers the State Government to specify the rate at which dividend may be paid by co-operative societies.",
       "trust_level": "partial",
       "shown_source": "Model Byelaws 05.01.02023.pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1788.42,
+      "total_time_ms": 1785.94,
       "passed": true
     },
     {
@@ -1331,15 +1338,15 @@
         "2925"
       ],
       "english_question": "What is the total financial outlay for the computerisation of PACS?",
-      "search_time_ms": 155.39,
+      "search_time_ms": 139.03,
       "pieces_returned": 1,
       "top_results": [
         {
           "document": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
           "page": 1,
-          "final": 71.82,
+          "final": 71.83,
           "keyword": 80.0,
-          "meaning": 63.0
+          "meaning": 63.01
         }
       ],
       "rank": 1,
@@ -1353,7 +1360,7 @@
       "shown_source": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1588.88,
+      "total_time_ms": 1529.45,
       "passed": true
     },
     {
@@ -1369,15 +1376,15 @@
         "jan aushadhi"
       ],
       "english_question": "Can PACS run Jan Aushadhi Kendras to sell generic medicines?",
-      "search_time_ms": 243.74,
+      "search_time_ms": 134.75,
       "pieces_returned": 2,
       "top_results": [
         {
           "document": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
           "page": 4,
-          "final": 79.75,
+          "final": 79.77,
           "keyword": 75.0,
-          "meaning": 69.3
+          "meaning": 69.31
         },
         {
           "document": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
@@ -1393,12 +1400,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "Yes, PACS can run Pradhan Mantri Bhartiya Jan Aushadhi Kendras (PMBJKs). This initiative allows PACS to operate these centres to provide quality generic medicines to rural citizens and generate additional income. According to the latest updates, 799 PACS have already received store codes from the Pharmaceutical & Medical Devices Bureau of India and are ready to function as PM Bhartiya Jan Aushadhi Kendras.",
+      "answer": "Yes, PACS can run Jan Aushadhi Kendras to sell generic medicines. They have been allowed to operate Pradhan Mantri Bhartiya Janaushadhi Kendras, which provides an additional income source and improves access to quality generic medicines at the rural level.",
       "trust_level": "verified",
       "shown_source": "Initiatives (Booklet)  - 20.11.2025(updated).pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1991.99,
+      "total_time_ms": 1779.39,
       "passed": true
     },
     {
@@ -1414,30 +1421,30 @@
       "expected_facts": [
         "6000"
       ],
-      "english_question": "How much money is received per year under the PM-KISAN scheme?",
-      "search_time_ms": 143.37,
+      "english_question": "How much money is received in a year under the PM-KISAN scheme?",
+      "search_time_ms": 158.12,
       "pieces_returned": 3,
       "top_results": [
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 3,
-          "final": 58.39,
+          "final": 59.48,
           "keyword": 60.0,
-          "meaning": 61.01
+          "meaning": 61.66
         },
         {
           "document": "RevisedPM-KISANOperationalGuidelines(English).pdf",
           "page": 10,
-          "final": 53.31,
+          "final": 54.5,
           "keyword": 60.0,
-          "meaning": 57.63
+          "meaning": 58.35
         },
         {
           "document": "doc1.pdf",
           "page": 63,
           "final": 31.18,
           "keyword": 60.0,
-          "meaning": 32.71
+          "meaning": 34.38
         }
       ],
       "rank": 1,
@@ -1446,12 +1453,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": true,
-      "answer": "Under the PM-KISAN scheme, eligible farmers receive a financial benefit of Rs. 6,000 per year. This amount is released in three equal installments of Rs. 2,000 each, paid every four months or trimester, specifically during the periods of April-July, August-November, and December-March.",
+      "answer": "Under the PM-KISAN scheme, eligible farmers receive a financial benefit of Rs. 6,000 per year, which is released in three installments of Rs. 2,000 each every four months.",
       "trust_level": "partial",
       "shown_source": "RevisedPM-KISANOperationalGuidelines(English).pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 1939.16,
+      "total_time_ms": 1711.34,
       "passed": true
     },
     {
@@ -1466,51 +1473,51 @@
       "expected_facts": [
         "72"
       ],
-      "english_question": "Within how many hours do you have to report the crop loss in PMFBY?",
-      "search_time_ms": 189.94,
+      "english_question": "How many hours do you have to report a crop loss in PMFBY?",
+      "search_time_ms": 134.78,
       "pieces_returned": 6,
       "top_results": [
         {
           "document": "doc1.pdf",
-          "page": 116,
-          "final": 80.9,
+          "page": 105,
+          "final": 79.12,
           "keyword": 80.0,
-          "meaning": 68.49
+          "meaning": 68.55
         },
         {
           "document": "doc1.pdf",
           "page": 105,
-          "final": 80.0,
+          "final": 78.84,
           "keyword": 80.0,
-          "meaning": 68.7
+          "meaning": 68.0
+        },
+        {
+          "document": "doc1.pdf",
+          "page": 116,
+          "final": 78.51,
+          "keyword": 80.0,
+          "meaning": 67.06
         },
         {
           "document": "doc1.pdf",
           "page": 114,
-          "final": 79.19,
+          "final": 78.14,
           "keyword": 80.0,
-          "meaning": 68.22
-        },
-        {
-          "document": "doc1.pdf",
-          "page": 105,
-          "final": 78.57,
-          "keyword": 80.0,
-          "meaning": 68.22
+          "meaning": 67.59
         },
         {
           "document": "doc1.pdf",
           "page": 107,
-          "final": 78.55,
+          "final": 77.12,
           "keyword": 80.0,
-          "meaning": 67.08
+          "meaning": 66.22
         },
         {
           "document": "doc1.pdf",
           "page": 114,
-          "final": 75.04,
+          "final": 76.44,
           "keyword": 80.0,
-          "meaning": 66.47
+          "meaning": 67.31
         }
       ],
       "rank": 1,
@@ -1519,12 +1526,12 @@
       "hit6": true,
       "rr": 1.0,
       "page_hit": false,
-      "answer": "Under PMFBY, a farmer must report the crop loss within 72 hours of the incident. This intimation can be given through the Crop Insurance App, Krishi Rakshak Portal & Helpline, directly to the Insurance Company via its toll-free number, or through the concerned bank or local agriculture department officials.",
+      "answer": "You must report a crop loss within 72 hours. You can do this through the Crop Insurance App, the Krishi Rakshak Portal & Helpline, the Insurance Company’s toll-free number, your bank, or local agriculture or district officials.",
       "trust_level": "verified",
       "shown_source": "doc1.pdf",
       "fact_ok": true,
       "source_ok": true,
-      "total_time_ms": 2023.32,
+      "total_time_ms": 1759.57,
       "passed": true
     },
     {
@@ -1536,7 +1543,7 @@
       "expected_pages": null,
       "expected_facts": [],
       "english_question": "Who won the cricket world cup?",
-      "search_time_ms": 150.58,
+      "search_time_ms": 129.53,
       "pieces_returned": 0,
       "top_results": [],
       "rejected": true,
@@ -1544,7 +1551,7 @@
       "trust_level": "refused",
       "shown_source": null,
       "refused_ok": true,
-      "total_time_ms": 1430.07,
+      "total_time_ms": 1417.49,
       "passed": true
     },
     {
@@ -1556,7 +1563,7 @@
       "expected_pages": null,
       "expected_facts": [],
       "english_question": "Suggest a good Bollywood movie to watch tonight",
-      "search_time_ms": 133.02,
+      "search_time_ms": 148.21,
       "pieces_returned": 0,
       "top_results": [],
       "rejected": true,
@@ -1564,7 +1571,7 @@
       "trust_level": "refused",
       "shown_source": null,
       "refused_ok": true,
-      "total_time_ms": 1402.77,
+      "total_time_ms": 1386.3,
       "passed": true
     },
     {
@@ -1576,7 +1583,7 @@
       "expected_pages": null,
       "expected_facts": [],
       "english_question": "Which party will win the next general election?",
-      "search_time_ms": 127.69,
+      "search_time_ms": 129.77,
       "pieces_returned": 1,
       "top_results": [
         {
@@ -1584,7 +1591,7 @@
           "page": 21,
           "final": 32.11,
           "keyword": 60.0,
-          "meaning": 32.21
+          "meaning": 32.2
         }
       ],
       "rejected": false,
@@ -1592,7 +1599,7 @@
       "trust_level": "refused",
       "shown_source": null,
       "refused_ok": true,
-      "total_time_ms": 1423.79,
+      "total_time_ms": 1398.53,
       "passed": true
     }
   ]

@@ -24,7 +24,7 @@ Every answer tells the user **where it came from**: an official government PDF (
 | Feature | How it works |
 |---|---|
 | 🗣️ **Ask in your language** | Type or speak in English, Hindi, Kannada or Nepali — including mixed language, local dialect and spelling mistakes. Sarvam AI rewrites the question into clear English for searching, and answers back in the user's chosen language. |
-| 🔎 **Hybrid document search** | 11 official PDFs are split into ~2,650 passages. Each question is matched three ways: **keyword (BM25)**, **spelling-tolerant (3-letter word parts, so *kisan ≈ kishan*)** and **meaning (Cloudflare Workers AI, `bge-m3` embeddings)**. |
+| 🔎 **Hybrid document search** | 11 official PDFs are split into ~2,650 passages. Each question is matched three ways: **keyword (BM25)**, **spelling-tolerant (3-letter word parts, so *kisan ≈ kishan*)** and **meaning (Cloudflare Workers AI, `bge-m3` embeddings)**. When a question names a scheme or law (PM-KISAN, KCC, PMKSY, Karnataka Act…), that scheme's own PDF is preferred (**scheme routing**). |
 | ✅ **Trust card on every answer** | 🟢 *Verified from official document* · 🟡 *Partly verified* · 🔵 *General guidance* — plus the exact PDF and page, one tap to open it. |
 | 📊 **Search report** | Tap to see the real numbers behind an answer: keyword %, spelling %, meaning %, final confidence, passages searched, candidates compared, search time and total response time. |
 | 🚫 **Stays on topic** | Questions about cricket, movies, politics etc. are politely refused. |
@@ -68,27 +68,29 @@ A passage is only used if its keyword **or** meaning match is strong enough. If 
 
 ## 📊 Accuracy scoreboard
 
-`evaluate_rag.py` runs **24 test questions** (13 farmer-scheme, 8 cooperative-law, 2 mixed-language, 3 off-topic). Every expected answer was checked by hand against the official PDFs.
+`evaluate_rag.py` runs **26 test questions** (13 farmer-scheme, 8 cooperative-law, 2 mixed Kannada/Hindi + English, 3 off-topic) through the full pipeline — search **and** Sarvam's written answers. Every expected answer (document, page and key fact such as “72 hours” or “₹6,000”) was checked by hand against the official PDFs.
 
-Baseline (search only, meaning search off, no AI — the harshest setting):
+Full test, 28 Sep 2026 (meaning search on):
 
 | Metric | Result |
 |---|---|
-| Correct document ranked #1 (Hit@1) | 80.95% |
-| Correct document in top 3 (Hit@3) | 90.48% |
-| Correct document among the 6 passages sent to the AI (Hit@6) | 95.24% |
-| Mean reciprocal rank (MRR) | 0.8690 |
-| Exact page found | 77.78% |
-| Average search time | ~14 ms |
-| **Overall** | **22 / 24 (91.67%)** |
+| Answer contains the correct fact | **91.30%** |
+| Correct official document among the passages given to the AI | **100%** |
+| Cooperative-law questions answered correctly | **100%** (8/8) |
+| Mixed-language questions understood and answered | **100%** (2/2) |
+| Off-topic questions refused | **100%** (3/3) |
+| Average response time | **1.85 s** |
+| **Overall (fact + correct source shown, or correct refusal)** | **21 / 26 (80.77%)** |
 
-**See it live, no setup:** open **https://sahakar-sahayak-4.onrender.com/scoreboard** and press *Run search test* (~2 s, free — no AI credits used). The server re-runs all questions against the official PDFs and shows every result.
+The latest numbers are always in [`benchmark_report.md`](benchmark_report.md), which is regenerated on every run.
+
+**See it live, no setup:** open **https://sahakar-sahayak-4.onrender.com/scoreboard** — it shows the full result with every question and the AI's actual answer. Visitors can press *Re-check search now* (~2 s, free — no AI credits used) to re-run the search part live.
 
 Or run it in a terminal:
 
 ```bash
 python3 evaluate_rag.py          # search only, no API keys needed (~1 s)
-python3 evaluate_rag.py --full   # + Sarvam answers: fact accuracy, source accuracy, refusals, response time
+python3 evaluate_rag.py --full   # + Sarvam answers (reads keys from a local .env file, never committed)
 ```
 
 Results are saved to `benchmark_results.json` and `benchmark_report.md`.
