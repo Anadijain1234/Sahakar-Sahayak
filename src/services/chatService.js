@@ -37,6 +37,8 @@ export const chatService = {
           id: `${source.document}-${source.page}-${index}`,
           documentName: source.document,
           provision: source.page ? `Page ${source.page}` : "",
+          // Full backend link to the PDF (opens on the right page)
+          link: source.link || null,
         })),
         suggestedQuestions: [],
         confidence: data.confidence,
