@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { chatService } from '../../services/chatService';
 import {
   CheckCircle2, AlertCircle, Info, FileText, ExternalLink,
-  Volume2, Send, Search, ChevronDown, ChevronUp, Phone, Scale, BarChart3,
+  Volume2, Send, Search, ChevronDown, ChevronUp, Phone, Scale, BarChart3, AlertTriangle,
 } from 'lucide-react';
 
 // Short, farmer-friendly labels in the language chosen on the website.
@@ -21,6 +21,7 @@ const LABELS = {
     checking: 'Other AIs are checking this answer…',
     good: 'Good', partly: 'Partly right', poor: 'Needs checking',
     scorecard: 'Scorecard',
+    checkWarn: 'AI check found problems · please verify with the source',
   },
   hi: {
     verified: 'आधिकारिक दस्तावेज़ से सत्यापित',
@@ -36,6 +37,7 @@ const LABELS = {
     checking: 'दूसरे AI इस उत्तर की जाँच कर रहे हैं…',
     good: 'सही', partly: 'आंशिक रूप से सही', poor: 'जाँच ज़रूरी',
     scorecard: 'स्कोरकार्ड',
+    checkWarn: 'AI जाँच में गड़बड़ी मिली · कृपया स्रोत से पुष्टि करें',
   },
   kn: {
     verified: 'ಅಧಿಕೃತ ದಾಖಲೆಯಿಂದ ಪರಿಶೀಲಿಸಲಾಗಿದೆ',
@@ -51,6 +53,7 @@ const LABELS = {
     checking: 'ಬೇರೆ AI ಗಳು ಈ ಉತ್ತರವನ್ನು ಪರಿಶೀಲಿಸುತ್ತಿವೆ…',
     good: 'ಸರಿ', partly: 'ಭಾಗಶಃ ಸರಿ', poor: 'ಪರಿಶೀಲನೆ ಅಗತ್ಯ',
     scorecard: 'ಸ್ಕೋರ್‌ಕಾರ್ಡ್',
+    checkWarn: 'AI ಪರಿಶೀಲನೆಯಲ್ಲಿ ಸಮಸ್ಯೆ ಕಂಡುಬಂದಿದೆ · ದಯವಿಟ್ಟು ಮೂಲದಿಂದ ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ',
   },
 };
 
@@ -76,6 +79,8 @@ const TRUST_STYLE = {
     box: 'bg-sky-50 border-sky-200 text-sky-800 dark:bg-sky-950/30 dark:border-sky-900/60 dark:text-sky-300',
   },
 };
+
+const WARN_BOX = 'bg-amber-50 border-amber-300 text-amber-800 dark:bg-amber-950/30 dark:border-amber-900/60 dark:text-amber-300';
 
 // Works for new answers (trust_level) and for older saved chats (answer_source only).
 const getTrustLevel = (message) => {
@@ -253,13 +258,40 @@ const SearchReport = ({ report, check, title }) => {
 
 // Mandi prices (backend/services/mandi_prices.py) -- only ever sent for price questions.
 const PRICE_LABELS = {
-  en: { title: 'Latest mandi prices', unit: '₹ per quintal', market: 'Market', min: 'Min', modal: 'Usual', max: 'Max', asOf: 'As of', source: 'Source', via: 'via GitHub', check: 'Check mandi prices' },
-  hi: { title: 'ताज़ा मंडी भाव', unit: '₹ प्रति क्विंटल', market: 'मंडी', min: 'न्यूनतम', modal: 'आम भाव', max: 'अधिकतम', asOf: 'तारीख', source: 'स्रोत', via: 'GitHub द्वारा', check: 'मंडी भाव देखें' },
-  kn: { title: 'ಇತ್ತೀಚಿನ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ', unit: '₹ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್', market: 'ಮಾರುಕಟ್ಟೆ', min: 'ಕನಿಷ್ಠ', modal: 'ಸಾಮಾನ್ಯ', max: 'ಗರಿಷ್ಠ', asOf: 'ದಿನಾಂಕ', source: 'ಮೂಲ', via: 'GitHub ಮೂಲಕ', check: 'ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ನೋಡಿ' },
-  ne: { title: 'पछिल्लो मण्डी भाउ', unit: '₹ प्रति क्विन्टल', market: 'मण्डी', min: 'न्यूनतम', modal: 'सामान्य', max: 'अधिकतम', asOf: 'मिति', source: 'स्रोत', via: 'GitHub मार्फत', check: 'मण्डी भाउ हेर्नुहोस्' },
+  en: { title: 'Latest mandi prices', unit: '₹ per quintal', market: 'Market', min: 'Min', modal: 'Usual', max: 'Max', asOf: 'As of', source: 'Source', via: 'via GitHub', check: 'Check mandi prices',
+    official: 'Official mandi prices (AGMARKNET)', today: 'today', yesterday: 'yesterday', daysOld: (n) => `${n} days old`, mayChange: 'prices may have changed' },
+  hi: { title: 'ताज़ा मंडी भाव', unit: '₹ प्रति क्विंटल', market: 'मंडी', min: 'न्यूनतम', modal: 'आम भाव', max: 'अधिकतम', asOf: 'तारीख', source: 'स्रोत', via: 'GitHub द्वारा', check: 'मंडी भाव देखें',
+    official: 'आधिकारिक मंडी भाव (AGMARKNET)', today: 'आज', yesterday: 'कल', daysOld: (n) => `${n} दिन पुराने`, mayChange: 'भाव बदल चुके हो सकते हैं' },
+  kn: { title: 'ಇತ್ತೀಚಿನ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ', unit: '₹ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್', market: 'ಮಾರುಕಟ್ಟೆ', min: 'ಕನಿಷ್ಠ', modal: 'ಸಾಮಾನ್ಯ', max: 'ಗರಿಷ್ಠ', asOf: 'ದಿನಾಂಕ', source: 'ಮೂಲ', via: 'GitHub ಮೂಲಕ', check: 'ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ನೋಡಿ',
+    official: 'ಅಧಿಕೃತ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ (AGMARKNET)', today: 'ಇಂದು', yesterday: 'ನಿನ್ನೆ', daysOld: (n) => `${n} ದಿನ ಹಳೆಯದು`, mayChange: 'ಬೆಲೆ ಬದಲಾಗಿರಬಹುದು' },
+  ne: { title: 'पछिल्लो मण्डी भाउ', unit: '₹ प्रति क्विन्टल', market: 'मण्डी', min: 'न्यूनतम', modal: 'सामान्य', max: 'अधिकतम', asOf: 'मिति', source: 'स्रोत', via: 'GitHub मार्फत', check: 'मण्डी भाउ हेर्नुहोस्',
+    official: 'आधिकारिक मण्डी भाउ (AGMARKNET)', today: 'आज', yesterday: 'हिजो', daysOld: (n) => `${n} दिन पुरानो`, mayChange: 'भाउ फेरिएको हुन सक्छ' },
 };
 
 const rupees = (n) => (typeof n === 'number' && Number.isFinite(n) ? Math.round(n).toLocaleString('en-IN') : '—');
+
+// How old the prices are: '25/09/2026' -> { days: 3, day: Date } (days counted on the phone's calendar)
+const priceAge = (ddmmyyyy) => {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(ddmmyyyy || '').trim());
+  if (!m) return null;
+  const day = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return { days: Math.max(0, Math.round((today - day) / 86400000)), day };
+};
+const DATE_LOCALE = { en: 'en-IN', hi: 'hi-IN', kn: 'kn-IN', ne: 'ne-NP' };
+const ageText = (age, P) => (!age ? '' : age.days === 0 ? P.today : age.days === 1 ? P.yesterday : P.daysOld(age.days));
+
+// Price answers: "Official mandi prices (AGMARKNET) · today" (green) or "· 25 Sep, 3 days old · prices may have changed" (amber)
+const priceBadgeText = (prices, language) => {
+  const P = PRICE_LABELS[language] || PRICE_LABELS.en;
+  const age = priceAge(prices.date);
+  if (!age) return { text: P.official, fresh: false };
+  if (age.days <= 1) return { text: `${P.official} · ${ageText(age, P)}`, fresh: true };
+  let shown = prices.date;
+  try { shown = age.day.toLocaleDateString(DATE_LOCALE[language] || 'en-IN', { day: 'numeric', month: 'short' }); } catch { /* keep dd/mm/yyyy */ }
+  return { text: `${P.official} · ${shown}, ${ageText(age, P)} · ${P.mayChange}`, fresh: false };
+};
 
 const PricesCard = ({ prices, language }) => {
   const P = PRICE_LABELS[language] || PRICE_LABELS.en;
@@ -313,7 +345,7 @@ const PricesCard = ({ prices, language }) => {
         </tbody>
       </table>
       <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-1.5">
-        {prices.date && <span>{P.asOf} {prices.date} ·</span>}
+        {prices.date && <span>{P.asOf} {prices.date}{priceAge(prices.date) ? ` (${ageText(priceAge(prices.date), P)})` : ''} ·</span>}
         <span>{P.source}:</span>
         <a href={portal.url} target="_blank" rel="noopener noreferrer" className={linkCls}>
           {portal.label} <ExternalLink className="h-3 w-3" />
@@ -342,6 +374,20 @@ export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, 
   const rid = report && report.request_id;
   const [check, setCheck] = useState(() => (rid ? readCheck(rid) : null));
   const [checking, setChecking] = useState(false);
+
+  // Which badge to show on top: AI-check warning > dated price badge > normal trust badge
+  const checkFailed = !!(check && typeof check.score === 'number' && check.score < 50);
+  const hasPriceTable = !!(message.prices && message.prices.status === 'ok' && Array.isArray(message.prices.records)
+    && message.prices.records.length > 0 && trust !== 'refused');
+  const priceBadge = hasPriceTable ? priceBadgeText(message.prices, language) : null;
+  let badge = null;
+  if (checkFailed) {
+    badge = { Icon: AlertTriangle, box: WARN_BOX, text: L.checkWarn || LABELS.en.checkWarn };
+  } else if (priceBadge) {
+    badge = { Icon: BarChart3, box: priceBadge.fresh ? TRUST_STYLE.verified.box : WARN_BOX, text: priceBadge.text };
+  } else if (style) {
+    badge = { Icon: style.Icon, box: style.box, text: L[trust] };
+  }
 
   // Ask other AIs to grade this answer, once, right after it appears
   useEffect(() => {
@@ -391,14 +437,14 @@ export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, 
 
   return (
     <div className="mt-4 pt-3.5 border-t border-slate-200/80 dark:border-slate-800/80 space-y-3">
-      {/* 1. Trust line (+ best source) */}
-      {style && (
-        <div className={`flex flex-wrap items-center gap-x-3 gap-y-1.5 px-3 py-2 rounded-xl border text-xs font-semibold ${style.box}`}>
+      {/* 1. Trust line (+ best source). Replaced by the AI-check warning or the dated price badge when those apply. */}
+      {badge && (
+        <div className={`flex flex-wrap items-center gap-x-3 gap-y-1.5 px-3 py-2 rounded-xl border text-xs font-semibold ${badge.box}`}>
           <span className="inline-flex items-center gap-1.5">
-            <style.Icon className="h-4 w-4 shrink-0" />
-            {L[trust]}
+            <badge.Icon className="h-4 w-4 shrink-0" />
+            {badge.text}
           </span>
-          {showSource && (
+          {showSource && !priceBadge && (
             <a
               href={best.link || undefined}
               target="_blank"
@@ -442,7 +488,7 @@ export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, 
       )}
 
       {/* 1b2. Live mandi prices (price questions only) */}
-      {message.prices && <PricesCard prices={message.prices} language={language} />}
+      {message.prices && trust !== 'refused' && <PricesCard prices={message.prices} language={language} />}
 
       {/* 1c. Talk to a person: official helplines (only under answers that aren't fully verified) */}
       {message.helplines && message.helplines.length > 0 && (
