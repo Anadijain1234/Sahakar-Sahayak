@@ -264,7 +264,7 @@ def _run_rag(q, order, tag):
     english, translated_by = normalize_query(cleaned, order=order)
     intent = detect_intent(english, language)
     results, stats = search(english, boost_terms=lexicon_terms(f"{cleaned} {english}"))
-    out = get_answer(english, language, intent, results, stats, order=order)
+    out = get_answer(english, language, intent, results, stats, order=order, original_query=cleaned)
     return {
         "answer": out.get("answer", ""),
         "answered_by": out.get("answered_by"),

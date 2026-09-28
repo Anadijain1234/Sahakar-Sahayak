@@ -64,6 +64,7 @@ def query(request: QueryRequest):
             intent=intent,
             retrieved_docs=retrieved_docs,
             search_stats=search_stats,
+            original_query=cleaned_query,
         )
 
         result["language"] = language
