@@ -1,68 +1,66 @@
-# Sahakar Sahayak — Accuracy Scoreboard
+# Sahakar Sahayak — 3-AI cross-judged benchmark
 
-Generated 2026-09-27 21:38 · mode **search+answers** · meaning search **on** · 2,655 passages from 11 official PDFs · 26 test questions
+Generated 2026-09-28 00:33 · 45 questions · each answer graded by the AIs that did NOT write it · two judges agree on 82.71% of 133 double-graded answers
 
-**Overall: 25/26 passed (96.15%)**
+## Headline
 
-## Search quality
+| | Sarvam + docs | Groq + docs | Cloudflare + docs | Sarvam alone |
+|---|---|---|---|---|
+| **Score** | **72.78%** | **72.22%** | **62.22%** | **30.00%** |
+| Fully correct answers | 60.00% | 66.67% | 51.11% | 28.89% |
+| Judged by | Groq · gpt-oss-20b + Cloudflare · Llama 3.3 70B | Sarvam · sarvam-105b + Cloudflare · Llama 3.3 70B | Sarvam · sarvam-105b + Groq · gpt-oss-20b | Groq · gpt-oss-20b |
+| Answered / graded | 45 / 45 | 45 / 45 | 45 / 45 | 45 / 45 |
+| Score from Sarvam · sarvam-105b | — | 70.45% | 60.23% | — |
+| Score from Groq · gpt-oss-20b | 76.67% | — | 63.33% | 30.00% |
+| Score from Cloudflare · Llama 3.3 70B | 68.89% | 73.33% | — | — |
+
+**What our document search adds to Sarvam:** 30.00% → 76.67% (**+46.67 points**, same judge: Groq · gpt-oss-20b)
+
+## By question type
+
+| | Sarvam + docs | Groq + docs | Cloudflare + docs | Sarvam alone |
+|---|---|---|---|---|
+| Facts from the PDFs | 75.00% | 58.93% | 57.14% | 25.00% |
+| Answers with several cases | 50.00% | 62.50% | 62.50% | 0.00% |
+| Hindi / Kannada / Nepali / Hinglish / typos | 55.00% | 90.00% | 62.50% | 10.00% |
+| Reply in the chosen language | 100.00% | 91.67% | 66.67% | 0.00% |
+| Wrong assumption must be corrected | 85.00% | 60.00% | 45.00% | 20.00% |
+| On-topic but not in the PDFs | 62.50% | 50.00% | 50.00% | 75.00% |
+| Off-topic & rule-breaking tricks | 100.00% | 100.00% | 100.00% | 100.00% |
+
+## By language
+
+| | Sarvam + docs | Groq + docs | Cloudflare + docs | Sarvam alone |
+|---|---|---|---|---|
+| English | 75.00% | 66.96% | 62.50% | 30.36% |
+| Hindi | 66.67% | 77.78% | 66.67% | 44.44% |
+| Kannada | 55.00% | 80.00% | 60.00% | 20.00% |
+| Nepali | 100.00% | 91.67% | 50.00% | 0.00% |
+
+## Automatic checks (no AI judge)
+
+| | Sarvam + docs | Groq + docs | Cloudflare + docs | Sarvam alone |
+|---|---|---|---|---|
+| Key fact present (numbers / English facts) | 76.47% | 67.65% | 64.71% | 17.65% |
+| Answer in the chosen language's script | 95.56% | 100.00% | 100.00% | 97.78% |
+| Off-topic questions refused | 100.00% | 100.00% | 80.00% | 100.00% |
+| On-topic questions wrongly refused (lower is better) | 2.50% | 2.50% | 0.00% | 10.00% |
+| Correct official PDF shown as source | 77.78% | 83.33% | 77.78% | — |
+| Response time avg / p95 | 1.11 s / 1.67 s | 1.25 s / 2.06 s | 4.63 s / 10.13 s | 0.65 s / 1.19 s |
+
+## Our document search (live app)
 
 | Metric | Result |
 |---|---|
-| Correct document ranked #1 (Hit@1) | 100.00% |
-| Correct document in top 3 (Hit@3) | 100.00% |
-| Correct document in the 6 passages sent to the AI (Hit@6) | 100.00% |
-| Mean reciprocal rank (MRR) | 1.0000 |
-| Exact page found (Page@6) | 80.00% |
-| Off-topic questions rejected by search | 66.67% |
-| Search time (avg / p95) | 194.80 ms / 409.22 ms |
+| Correct PDF ranked #1 / top 3 / top 6 | 77.78% / 83.33% / 86.11% |
+| Mean reciprocal rank | 0.8102 |
+| Exact page among the 6 passages | 69.44% |
+| Document answers marked 🟢 Verified | 33.33% |
+| 'Not in the PDFs' questions NOT falsely marked Verified | 100.00% |
 
-## Answer quality
+## How this test works
 
-| Metric | Result |
-|---|---|
-| Answer contains the correct fact | 95.65% |
-| Correct official source shown | 100.00% |
-| Off-topic questions politely refused | 100.00% |
-| Answers marked 'Verified' | 56.52% |
-| Response time (avg / p95) | 1.82 s / 2.24 s |
-
-## By category
-
-| Category | Questions | Correct document found | Facts correct |
-|---|---|---|---|
-| scheme | 13 | 100.00% | 92.31% |
-| cooperative | 8 | 100.00% | 100.00% |
-| mixed | 2 | 100.00% | 100.00% |
-
-## Every question
-
-| ID | Topic | Question | Result |
-|---|---|---|---|
-| S01 | PM-KISAN | How much money does a farmer get every year under PM-KISAN? | rank 1 · fact ✓ · source ✓ |
-| S02 | PM-KISAN | In how many installments is the PM-KISAN benefit paid and how much is each installment? | rank 1 · fact ✓ · source ✓ |
-| S03 | PM-KISAN | Are retired pensioners eligible for PM-KISAN benefits? | rank 1 · fact ✓ · source ✓ |
-| S04 | PM-KISAN | What is the cut-off date for land ownership eligibility under PM-KISAN? | rank 1 · fact ✓ · source ✓ |
-| S05 | PMFBY | Within how many hours must a farmer report crop loss due to localized calamities under PMFBY? | rank 1 · fact ✓ · source ✓ |
-| S06 | PMFBY | How can a farmer intimate crop loss under PMFBY, through which app or helpline? | rank 1 · fact ✓ · source ✓ |
-| S07 | KCC | Up to what amount are Kisan Credit Card loans given without collateral security? | rank 1 · fact ✓ · source ✓ |
-| S08 | KCC | What is the tenure of the KCC composite credit facility? | rank 1 · fact ✓ · source ✓ |
-| S09 | KCC | Who is a marginal farmer as per the RBI Kisan Credit Card directions? | rank 1 · fact ✗ · source ✓ |
-| S10 | KCC | What is the flexi KCC credit limit for marginal farmers? | rank 1 · fact ✓ · source ✓ |
-| S11 | UPIS | What is the age limit for farmers to join the Unified Package Insurance Scheme? | rank 1 · fact ✓ · source ✓ |
-| S12 | PMKSY | What subsidy do small and marginal farmers get for micro irrigation under PMKSY? | rank 1 · fact ✓ · source ✓ |
-| S13 | PMKSY | What is the central and state funding ratio for North Eastern and Himalayan states under PMKSY? | rank 1 · fact ✓ · source ✓ |
-| C01 | Karnataka Act | How often must a cooperative society in Karnataka get its accounts audited? | rank 1 · fact ✓ · source ✓ |
-| C02 | MSCS Amendment 2023 | Which authority conducts elections of multi-state cooperative societies after the 2023 amendment? | rank 1 · fact ✓ · source ✓ |
-| C03 | MSCS Amendment 2023 | Which fund was created for the revival of sick multi-state cooperative societies under the 2023 amendment? | rank 1 · fact ✓ · source ✓ |
-| C04 | Model Bye-laws | What percentage of net profit must a PACS transfer to its reserve fund every year under the model bye-laws? | rank 1 · fact ✓ · source ✓ |
-| C05 | Model Bye-laws | What is the maximum borrowing limit of a PACS compared to its paid-up share capital and reserves? | rank 1 · fact ✓ · source ✓ |
-| C06 | Model Bye-laws | Who decides the rate of dividend in a PACS? | rank 1 · fact ✓ · source ✓ |
-| C07 | PACS initiatives | What is the total financial outlay for the computerisation of PACS? | rank 1 · fact ✓ · source ✓ |
-| C08 | PACS initiatives | Can PACS run Jan Aushadhi Kendras to sell generic medicines? | rank 1 · fact ✓ · source ✓ |
-| M01 | PM-KISAN | PM Kisan yojane alli varshakke eshtu duddu sigutte? | rank 1 · fact ✓ · source ✓ |
-| M02 | PMFBY | fasal bima mein nuksan hone par kitne ghante mein batana padta hai? | rank 1 · fact ✓ · source ✓ |
-| O01 | Cricket | Who won the cricket world cup? | rejected ✓ · refused ✓ |
-| O02 | Movies | Suggest a good Bollywood movie to watch tonight | rejected ✓ · refused ✓ |
-| O03 | Politics | Which party will win the next general election? | rejected ✗ · refused ✓ |
-
-_Expected answers were checked by hand against the official PDFs. Run `python3 evaluate_rag.py --full` to reproduce._
+- 45 questions in 7 groups, picked from a bank of 200; every document answer key has an exact quote from the PDF page (machine-checked). The app was never tuned on them.
+- Three AIs from three companies each answer using our document search; each answer is graded by the other AIs, never by itself, without knowing who wrote it.
+- Sarvam alone (same instructions, no documents) shows what our search adds.
+- Reproduce: `python3 evaluate_rag.py --run` then `python3 evaluate_rag.py --grade`.
