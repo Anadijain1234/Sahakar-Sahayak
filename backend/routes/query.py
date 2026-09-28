@@ -4,6 +4,8 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
+from pydantic import BaseModel
+
 from backend.models.schemas import QueryRequest, QueryResponse
 
 from backend.services.nlp_service import (
@@ -16,6 +18,7 @@ from backend.services.reqlog import new_request_id, log
 from backend.services.retriever import search
 from backend.services.help_contacts import helplines_for
 from backend.services import analytics
+from backend.services import live_judge
 
 # Friendly names for the Insights page (keys = file-name parts used by scheme routing)
 TOPIC_NAMES = {
@@ -88,7 +91,13 @@ def query(request: QueryRequest):
             confidence=result.get("confidence"), response_ms=total_ms,
             topics=[TOPIC_NAMES.get(d, d) for d in routed],
             answered_by=result.get("answered_by"),
+            report=result.get("search_report"),
+            top_page=(result.get("sources") or [{}])[0].get("page"),
         )
+        # 9. Keep what the AI judges need; the website asks for the check right after showing the answer
+        live_judge.remember(rid, cleaned_query, english_query, result.get("answer"), language,
+                            result.get("trust_level"), result.get("answered_by"),
+                            [d.get("text", "") for d in retrieved_docs] if result.get("answer_source") == "documents" else [])
         log("QUERY", f"🏁 finished in {total_ms / 1000:.2f}s | translated by {translated_by or 'none'} | "
                      f"answered by {result.get('answered_by')} | trust={result.get('trust_level')} | "
                      f"helplines={len(result['helplines'])}")
@@ -104,3 +113,14 @@ def query(request: QueryRequest):
             status_code=500,
             detail=f"Failed to process query (request {rid}): {str(e)}"
         )
+
+
+class JudgeRequest(BaseModel):
+    request_id: str
+
+
+@router.post("/judge")
+def judge_answer(request: JudgeRequest):
+    """Live AI check of one answer: graded by the AIs that did NOT write it (see live_judge.py).
+    Called by the website right after an answer is shown; never delays the answer."""
+    return JSONResponse(content=jsonable_encoder(live_judge.judge(request.request_id.strip()[:32])))

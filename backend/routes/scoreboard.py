@@ -131,6 +131,9 @@ def _official_section(result):
           <div class="muted small">judged by {_e(" + ".join(b.get("judged_by", [])))} ·
           {b["graded"]} of {b["answered"]} graded</div></div>''')
     out.append(f'<section class="cards three">{"".join(hero)}</section>')
+    if s.get("plain_words"):
+        out.append('<div class="plain"><b>In plain words</b><ul>' +
+                   "".join(f"<li>{_e(x)}</li>" for x in s["plain_words"]) + "</ul></div>")
     d = s.get("documents_add")
     if d:
         out.append(f'''<div class="banner ok-bg">📚 <b>What our document search adds to Sarvam:</b>
@@ -236,40 +239,44 @@ def scoreboard_page():
     refresh = '<meta http-equiv="refresh" content="4">' if _state["running"] else ""
     return HTMLResponse(f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">{refresh}
-<title>Sahakar Sahayak · Accuracy Scoreboard</title>
+<title>Sahakar Sahayak · Accuracy Test Results</title>
 <style>
 :root{{--bg:#f7f8f6;--card:#fff;--ink:#16211b;--muted:#5f6b64;--line:#e3e7e4;--brand:#15803d;--ok:#15803d;--bad:#b91c1c;--run:#e0f2fe;--warn:#fef3c7;--okbg:#dcfce7}}
 @media (prefers-color-scheme:dark){{:root{{--bg:#0e1411;--card:#151d18;--ink:#e6ede8;--muted:#9aa8a0;--line:#26312b;--brand:#4ade80;--ok:#4ade80;--bad:#f87171;--run:#0c2a3a;--warn:#3a2f0c;--okbg:#0f2e1b}}}}
-*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}}
-main{{max-width:1100px;margin:0 auto;padding:24px 16px 48px}}
-h1{{font-size:22px;margin:0 0 4px}}h2{{font-size:16px;margin:28px 0 10px}}
-.muted{{color:var(--muted)}}.small{{font-size:12px}}.mono{{font-family:ui-monospace,Menlo,Consolas,monospace}}
+*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}}
+main{{max-width:1180px;margin:0 auto;padding:24px 16px 48px}}
+h1{{font-size:26px;margin:0 0 4px}}h2{{font-size:21px;margin:28px 0 10px}}
+.muted{{color:var(--muted)}}.small{{font-size:14px}}.mono{{font-family:ui-monospace,Menlo,Consolas,monospace}}
 .hero{{display:flex;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-top:18px}}
-.big{{font-size:44px;font-weight:800;color:var(--brand);line-height:1}}.big span{{font-size:22px;color:var(--muted)}}
+.big{{font-size:48px;font-weight:800;color:var(--brand);line-height:1}}.big span{{font-size:22px;color:var(--muted)}}
 .score{{font-size:20px;font-weight:700}}
 .cards{{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:12px}}
 .card{{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}}
-.card .v{{font-size:20px;font-weight:700;font-family:ui-monospace,Menlo,Consolas,monospace}}.card .k{{font-size:12px;color:var(--muted)}}
+.card .v{{font-size:26px;font-weight:700;font-family:ui-monospace,Menlo,Consolas,monospace}}.card .k{{font-size:14px;color:var(--muted)}}
 .tablewrap{{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}}
-table{{border-collapse:collapse;width:100%;font-size:13px}}th,td{{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}
-th{{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}}td.q{{min-width:220px}}
+table{{border-collapse:collapse;width:100%;font-size:14px}}th,td{{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}
+th{{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}}td.q{{min-width:220px}}
 .ok{{color:var(--ok);font-weight:700}}.bad{{color:var(--bad);font-weight:700}}
 .banner{{border-radius:12px;padding:10px 14px;margin:10px 0}}.run{{background:var(--run)}}.warn{{background:var(--warn)}}.ok-bg{{background:var(--okbg)}}
 .actions{{margin:10px 0 8px}}
 button{{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--brand);background:var(--card);color:var(--ink);padding:10px 14px;text-align:left}}
-button span{{display:block;font-size:12px;color:var(--muted)}}button:disabled{{opacity:.5;cursor:not-allowed}}
+button span{{display:block;font-size:14px;color:var(--muted)}}button:disabled{{opacity:.5;cursor:not-allowed}}
 a{{color:var(--brand)}}
-.three{{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}.hero-card .big{{font-size:34px;font-weight:800;line-height:1.1;font-family:ui-monospace,Menlo,Consolas,monospace}}
-.hero-card.main{{border:2px solid var(--brand)}}.hero-card .k{{font-weight:700;color:var(--ink);font-size:14px}}
+.three{{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}.hero-card .big{{font-size:38px;font-weight:800;line-height:1.1;font-family:ui-monospace,Menlo,Consolas,monospace}}
+.hero-card.main{{border:2px solid var(--brand)}}.hero-card .k{{font-weight:700;color:var(--ink);font-size:17px}}
 details{{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:6px 0;padding:8px 12px}}
-summary{{cursor:pointer;font-size:13px}}.tag{{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:999px;padding:0 7px;margin-right:4px;color:var(--muted)}}
-.tag.hid{{border-color:var(--brand);color:var(--brand)}}.key{{font-size:13px;margin:8px 0;padding:8px;border-radius:8px;background:var(--bg)}}
-.ans{{border-top:1px solid var(--line);padding:8px 0;font-size:13px}}.chip{{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;cursor:help}}
+summary{{cursor:pointer;font-size:15px;line-height:1.6}}.tag{{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:0 7px;margin-right:4px;color:var(--muted)}}
+.tag.hid{{border-color:var(--brand);color:var(--brand)}}.key{{font-size:15px;margin:8px 0;padding:8px;border-radius:8px;background:var(--bg)}}
+.ans{{border-top:1px solid var(--line);padding:10px 0;font-size:15px}}.chip{{font-size:13px;font-weight:700;border-radius:6px;padding:1px 6px;cursor:help}}
+.plain{{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:12px;padding:12px 16px;margin:14px 0}}
+.plain ul{{margin:6px 0 0;padding-left:20px}}.plain li{{margin:4px 0}}
 .chip.ok{{background:var(--okbg);color:var(--ok)}}.chip.mid{{background:var(--warn)}}.chip.bad{{color:var(--bad);border:1px solid var(--bad)}}
 </style></head><body><main>
-<h1>🌾 Sahakar Sahayak · Accuracy Scoreboard</h1>
-<div class="muted">Sarvam, Groq and Cloudflare answer questions with keys from official government PDFs, and grade
-each other · <a href="/scoreboard.json">raw JSON</a></div>
+<h1>🌾 Sahakar Sahayak · Accuracy Test Results</h1>
+<div class="muted">A one-time test of 45 hard questions with answer keys from official government PDFs: Sarvam, Groq and
+Cloudflare answer, and grade each other · <a href="/scoreboard.json">raw JSON</a></div>
+<p class="muted small">Not the same as the <b>Scorecard</b> and <b>AI check</b> under each answer in the app: those grade one live
+answer; this page tests the whole system on a fixed set of questions.</p>
 {main}
 {_live_section()}
 </main></body></html>''')

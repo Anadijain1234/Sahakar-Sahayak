@@ -9,16 +9,38 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 
 DEFAULT_DB_PATH = os.path.join(DATA_DIR, "sahakar_sahayak.db")
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH}")
 
-# SQLite requires check_same_thread=False for multithreaded FastAPI requests
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+# DATABASE_URL set (e.g. a free Neon Postgres) -> permanent storage: accounts and the
+# Insights log survive redeploys. Not set -> a SQLite file, which on Render's free plan
+# is wiped on every redeploy/restart (fine for local development).
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip() or f"sqlite:///{DEFAULT_DB_PATH}"
+if DATABASE_URL.startswith("postgres://"):          # some providers use the short form
+    DATABASE_URL = "postgresql://" + DATABASE_URL[len("postgres://"):]
+IS_SQLITE = DATABASE_URL.startswith("sqlite")
+IS_PERMANENT = not IS_SQLITE
+
+if IS_SQLITE:
+    # SQLite requires check_same_thread=False for multithreaded FastAPI requests
+    connect_args, engine_options = {"check_same_thread": False}, {}
+else:
+    # Neon sleeps after a few idle minutes and closes old connections:
+    # pool_pre_ping checks a connection before using it and reconnects if needed.
+    connect_args = {"connect_timeout": 15}
+    engine_options = {"pool_pre_ping": True, "pool_recycle": 240, "pool_size": 3, "max_overflow": 2}
 
 engine = create_engine(
     DATABASE_URL,
     connect_args=connect_args,
-    echo=False
+    echo=False,
+    **engine_options
 )
+
+try:
+    _where = "SQLite file (temporary on Render's free plan)" if IS_SQLITE else \
+        f"PostgreSQL at {engine.url.host} (permanent)"
+    print(f"🗄️ Database: {_where}")
+except Exception:
+    pass
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

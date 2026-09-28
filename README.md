@@ -12,10 +12,24 @@
 Every answer tells the user **where it came from**: an official government PDF (with a clickable link to the exact page) or general guidance that should be confirmed with the cooperative office.
 
 - 🌐 **Live app:** https://sahakar-sahayak-frontend.onrender.com
-- 📊 **Live accuracy scoreboard:** https://sahakar-sahayak-4.onrender.com/scoreboard
+- 📊 **Accuracy test results:** https://sahakar-sahayak-4.onrender.com/scoreboard
 - ⚙️ **API docs (Swagger):** https://sahakar-sahayak-4.onrender.com/docs
 
 > Hosted on free servers — if the app has been idle, the first answer can take up to a minute while the server wakes up.
+
+### 🏆 Results at a glance
+- **Our document search more than doubles accuracy:** Sarvam answers **30.56%** correctly on its own and **72.78%** with Sahakar Sahayak's search.
+- **Tested fairly:** 45 hard questions in 4 languages; three AIs from three companies (Sarvam, Groq, Cloudflare) grade **each other's** answers, never their own.
+- **100%** of off-topic and trick questions refused · correct official PDF found for **86%** of questions · answers in about **1 second**.
+
+### 🧭 Try it in 2 minutes
+1. Open the live app → **Continue as Guest** → **Ask Sahayak**.
+2. Ask in mixed language: *"PM Kisan yojane alli varshakke eshtu duddu sigutte?"* → a 🟢 **Verified** answer with a link to the exact PDF page.
+3. Switch the language to **Hindi** and ask *"fasal bima claim kitne din me milta hai?"* → the answer comes in Hindi.
+4. Ask *"Who won the IPL?"* → politely refused.
+5. Ask something the PDFs only partly cover → a ☎️ **helpline** box appears so the farmer can talk to a person.
+6. A few seconds after each answer, a line shows **⚖️ AI check: Good · 84/100** — other AIs graded it. Tap **Scorecard** to see their grades and reasons, the search scores, which AI answered and the request ID.
+7. In the left menu (or the page footer), open **📊 Accuracy results** to see the full 45-question test: every question, every answer and every grade.
 
 ---
 
@@ -24,17 +38,22 @@ Every answer tells the user **where it came from**: an official government PDF (
 | Feature | How it works |
 |---|---|
 | 🗣️ **Ask in your language** | Type or speak in English, Hindi, Kannada or Nepali — including mixed language, local dialect and spelling mistakes. Sarvam AI rewrites the question into clear English for searching, and answers back in the user's chosen language. |
-| 🔎 **Hybrid document search** | 11 official PDFs are split into ~2,650 passages. Each question is matched three ways: **keyword (BM25)**, **spelling-tolerant (3-letter word parts, so *kisan ≈ kishan*)** and **meaning (Cloudflare Workers AI, `bge-m3` embeddings)**. When a question names a scheme or law (PM-KISAN, KCC, PMKSY, Karnataka Act…), that scheme's own PDF is preferred (**scheme routing**). |
+| 🔎 **Finds the answer in official documents** | 11 official government PDFs are split into ~2,650 short passages. Each question is matched three ways: the **same words** (BM25), **similar spelling** (so *kisan ≈ kishan*) and the **same meaning** even with different words (Cloudflare `bge-m3`). If a question names a scheme or law (PM-KISAN, KCC, PMKSY, Karnataka Act…), that scheme's own PDF is preferred. |
 | ✅ **Trust card on every answer** | 🟢 *Verified from official document* · 🟡 *Partly verified* · 🔵 *General guidance* — plus the exact PDF and page, one tap to open it. |
-| 📊 **Search report** | Tap to see the real numbers behind an answer: keyword %, spelling %, meaning %, final confidence, passages searched, candidates compared, search time and total response time. |
+| ⚖️ **Live AI check (per answer)** | Seconds after an answer appears, **other AIs grade it** — never the AI that wrote it (Sarvam's answers are checked by Groq and Cloudflare). They score how faithful it is to the official passages and how well it answers the question, and whether it is in the right language. The verdict shows under the answer and is saved for the admin. |
+| 🧾 **Scorecard (per answer)** | Tap to see the real numbers behind an answer: the AI check with each judge's reason, keyword %, spelling %, meaning %, final confidence, passages searched, search time, total time, which AI answered and the request ID. |
 | 🚫 **Stays on topic** | Questions about cricket, movies, politics etc. are politely refused — in the user's language — and tricks like *"ignore your instructions"* are ignored. |
+| 🧐 **Corrects wrong ideas** | If a question assumes something false (*"KCC is only for land owners, right?"*), the answer politely corrects it using the official rule. |
 | 🛟 **Never goes silent** | Triple AI fallback: **Sarvam → Groq → Cloudflare**. If all three are down, **search-only mode** shows the exact passage from the official PDF. Every step is logged with a request ID. |
 | ☎️ **Talk to a person** | Under answers that aren't fully verified (and under complaints), the app shows official helplines — Kisan Call Centre 1800-180-1551, crop-insurance helpline 14447, PM-KISAN helpdesk, the Registrar's office — tap to call. |
-| 📈 **Admin insights** | A password-protected `/admin` page: most asked questions, languages, schemes, which AI answered, and the **knowledge gaps** — questions the PDFs couldn't answer, i.e. which document to add next. |
-| 🔊 **Voice in, voice out** | Speech-to-text with a 3-level fallback (**Sarvam → Bhashini → Google**) and text-to-speech (**Bhashini → Google**). |
+| 📈 **Admin insights** | A password-protected `/admin` page: every recent question with its **scorecard and AI-check score**, most asked questions, languages, schemes, which AI answered, and the **knowledge gaps** — questions the PDFs couldn't answer, i.e. which document to add next. Download everything as CSV. |
+| 🔊 **Voice in, voice out** | Speak your question and hear the answer. Speech-to-text has its own 3-level fallback (**Sarvam → Bhashini → Google**), and read-aloud falls back from **Bhashini → Google** — so voice also never goes silent. (English, Hindi, Kannada; Nepali voice is planned.) |
 | 📤 **Share the full answer** | One tap shares the question, full answer and source link to WhatsApp (or any app on a phone). |
 | 🔐 **Secure sign-up** | Email **and** phone OTP verification, hashed OTPs, attempt limits, resend cooldown; the account is only created after both are verified. |
 | 🤖 **Telegram bot** | The same assistant on Telegram, with a language menu (Kannada / English / Hindi). |
+| 👤 **Easy to use** | Guest mode (no sign-up needed), a **New chat** button, and you stay logged in when the page is refreshed. |
+| 🗄️ **Nothing gets lost** | User accounts and the admin insights are stored in a free permanent database (Neon Postgres), so they survive server restarts. |
+| 🏆 **Proven accuracy** | A public test page where three AIs grade each other on 45 hard questions — see [Accuracy benchmark](#-accuracy-benchmark-3-ais-grade-each-other). |
 
 ---
 
@@ -51,7 +70,8 @@ flowchart LR
     D --> D3["Meaning match<br/>(Cloudflare bge-m3)"]
     D1 & D2 & D3 --> E["Best 6 passages<br/>+ real scores"]
     E --> F["Sarvam AI writes a short answer<br/>in the user's language<br/>(backups: Groq → Cloudflare → search-only)"]
-    F --> G["Trust card + source link<br/>+ search report + share"]
+    F --> G["Trust card + source link<br/>+ scorecard + share"]
+    F --> J["Live AI check:<br/>other AIs grade the answer"]
     F --> H["Text-to-speech<br/>Bhashini → Google"]
 ```
 
@@ -85,7 +105,7 @@ An AI that fails (error, timeout, empty reply) is rested for 60 seconds so the n
 [REQ a3f9c2] [QUERY] 🏁 finished in 2.41s | translated by groq | answered by groq | trust=verified
 ```
 
-The chat shows which AI answered (a small note appears when a backup was used), and the search report shows the request ID.
+The chat shows which AI answered (a small note appears when a backup was used), and the scorecard shows the request ID.
 
 ---
 
@@ -102,6 +122,23 @@ The chat shows which AI answered (a small note appears when a backup was used), 
 | Wrong assumption | 5 | *"KCC is only for land owners, right?"* — the app must correct it |
 | On-topic, not in the PDFs | 4 | honest general guidance, no invented rules |
 | Off-topic & tricks | 5 | cricket, recipes, *"ignore all previous instructions"* — must refuse |
+
+**Results (28 Sep 2026, 45 questions, every answer graded by two rival AIs):**
+
+| Contestant | Score | Fully correct |
+|---|---|---|
+| **Sarvam + our documents (the live app)** | **72.78%** | 60.00% |
+| Groq gpt-oss-120b + our documents | 72.22% | 66.67% |
+| Cloudflare Llama 3.3 70B + our documents | 62.22% | 51.11% |
+| Sarvam alone (no documents) | 30.56% | — |
+
+- **Our document search more than doubles accuracy:** Sarvam goes from ~31% to ~73%, and every AI we tested improves the same way.
+- The two judges agree on **82.71%** of the answers they both graded.
+- Off-topic questions and rule-breaking tricks refused: **100%**. Wrong assumptions corrected: **85%**. English questions answered in the chosen Hindi / Kannada / Nepali: **100%** (Sarvam + documents).
+- Search: correct PDF found in the top 6 for **86.11%** of questions (ranked #1 for 77.78%).
+- Weaker areas (next steps): Kannada and mixed-language questions (55% for Sarvam + documents vs 90% for Groq + documents), and answers with several cases (50%).
+
+Full tables: [`benchmark_report.md`](benchmark_report.md) · every question, answer and grade: [accuracy test results page](https://sahakar-sahayak-4.onrender.com/scoreboard).
 
 **Contestants.** Three AIs from three companies each answer every question **using our document search**: Sarvam (`sarvam-105b`), Groq (`gpt-oss-120b`) and Cloudflare (Llama 3.3 70B). A fourth contestant, **Sarvam alone** with the same instructions but no documents, shows what our search adds.
 
@@ -147,7 +184,7 @@ Stored in `backend/data/documents/` and served at `/documents/<file>` so every s
 ```mermaid
 flowchart TD
     subgraph Client["Frontend — React 19 + Vite (Render static site)"]
-        UI[Chat · Trust card · Search report · Share]
+        UI[Chat · Trust card · Scorecard · AI check · Share]
         Voice[Mic input / Read aloud]
         AuthUI[Sign-up with email + phone OTP]
     end
@@ -170,7 +207,7 @@ flowchart TD
         GG[Google speech<br/>fallback]
         BREVO[Brevo email]
         SMS[SMS gateway app]
-        DB[(SQLite)]
+        DB[(Neon Postgres<br/>accounts + insights)]
     end
 
     UI --> Q --> RET --> CF
@@ -195,6 +232,7 @@ flowchart TD
 | `GET` | `/health` | Health check (used by the uptime pinger) |
 | `GET` | `/scoreboard` | Live accuracy scoreboard page (run tests from the browser) |
 | `GET` | `/scoreboard.json` | Last scoreboard result as JSON |
+| `POST` | `/judge` | Live AI check of one answer (body `{"request_id": "…"}`), called by the website after each answer |
 | `GET` | `/insights?key=…` | Admin insights page (password = `INSIGHTS_KEY`) |
 | `GET` | `/insights.json` · `/insights.csv` | Insights data / all logged questions (header `X-Insights-Key`) |
 | `POST` | `/api/auth/register/initiate` | Start sign-up, sends email + phone OTP |
@@ -237,12 +275,13 @@ Set these in Render → Environment (never commit real values). See `.env.exampl
 | `GROQ_API_KEY` | 1st backup AI (free key from console.groq.com) · optional `GROQ_MODEL` |
 | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Meaning search + 2nd backup AI · optional `CLOUDFLARE_LLM_MODEL` |
 | `INSIGHTS_KEY` | Password for the admin insights page (`/admin`) |
+| `LIVE_JUDGE`, `LIVE_JUDGE_GROQ_DAILY`, `LIVE_JUDGE_CLOUDFLARE_DAILY`, `GROQ_JUDGE_MODEL` | Optional: live AI check on/off (default on) and its daily limits (120 Groq / 80 Cloudflare checks), so the backups' free quota is never used up |
 | `LLM_ORDER`, `LLM_TIMEOUT`, `LLM_COOLDOWN` | Optional: AI order (default `sarvam,groq,cloudflare`), seconds per call (30), rest after a failure (60) |
 | `BHASHINI_USER_ID`, `BHASHINI_API_KEY` | Bhashini speech |
 | `JWT_SECRET` | Login tokens |
 | `EMAIL_API_KEY`, `SENDER_EMAIL` | Email OTP (Brevo) |
 | `GATEWAY_API_KEY` | Phone OTP (SMS gateway app) |
-| `DATABASE_URL` | Database (defaults to SQLite) |
+| `DATABASE_URL` | Permanent database for user accounts and admin insights — a free [Neon](https://neon.com) Postgres connection string. Without it, a SQLite file is used, which Render's free plan wipes on every redeploy |
 | `PUBLIC_BACKEND_URL` | Public backend address used in PDF links |
 | `TELEGRAM_BOT_TOKEN`, `API_URL` | Telegram bot |
 | `VITE_API_URL` (frontend) | Backend address for the React app |
@@ -292,11 +331,13 @@ backend/
   routes/auth.py           sign-up, OTP, login
   routes/scoreboard.py     live /scoreboard page
   routes/insights.py       admin insights (/insights, /insights.json, /insights.csv)
-  services/rag_service.py  question rewriting, answer, trust level, search report, search-only mode
+  services/rag_service.py  question rewriting, answer, trust level, scorecard numbers, search-only mode
+  services/live_judge.py   live AI check: other AIs grade every answer (free daily limits built in)
   services/llm_chain.py    triple AI fallback: Sarvam -> Groq -> Cloudflare, with logs
   services/reqlog.py       request IDs for the logs
   services/help_contacts.py official helplines ("talk to a person")
-  services/analytics.py    question log for admin insights (phone numbers / emails removed)
+  services/analytics.py    question log for admin insights, saved in the database (phone numbers / emails removed)
+  models/database.py       database connection (Neon Postgres, or SQLite locally)
   services/retriever.py    hybrid search (BM25 + word parts + Cloudflare meaning)
   services/nlp_service.py  cleaning, language check, intent
   services/auth_service.py passwords, OTPs, JWT, email/SMS dispatch
@@ -306,7 +347,7 @@ anadi_voice_engine.py      speech-to-text / text-to-speech with fallbacks
 src/
   pages/Chat.jsx           chat screen
   pages/Admin.jsx          admin insights (/admin)
-  components/chat/AnswerFooter.jsx  trust card, helplines, share, search report
+  components/chat/AnswerFooter.jsx  trust card, AI check, helplines, share, scorecard
 evaluate_rag.py            benchmark: 3 AIs answer, the other AIs judge
 benchmark_questions.json   the 45 test questions with answer keys and PDF quotes
 benchmark_questions_all.json  bank of 200 questions
@@ -320,7 +361,6 @@ test_search.py             search smoke test
 - Knowledge base covers Karnataka + central cooperative law; other states' Acts can be added by dropping PDFs into `backend/data/documents/`.
 - Scanned (image-only) PDFs can't be read yet — OCR is a planned addition.
 - Planned: state selection for state-specific rules and more states' Acts.
-- The admin insights log lives on the server's disk; on Render's free plan it starts again after each redeploy (a free hosted database would make it permanent).
 
 ---
 

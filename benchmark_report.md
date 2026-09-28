@@ -1,6 +1,6 @@
-# Sahakar Sahayak — 3-AI cross-judged benchmark
+# Sahakar Sahayak — Accuracy Test Results (3 AIs grade each other)
 
-Generated 2026-09-28 00:40 · 45 questions · each answer graded by the AIs that did NOT write it · two judges agree on 84.27% of 178 double-graded answers
+Generated 2026-09-28 08:33 · 45 questions · each answer graded by the AIs that did NOT write it · two judges agree on 84.27% of 178 double-graded answers
 
 ## Headline
 
@@ -13,6 +13,14 @@ Generated 2026-09-28 00:40 · 45 questions · each answer graded by the AIs that
 | Score from Sarvam · sarvam-105b | — | 70.45% | 60.23% | — |
 | Score from Groq · gpt-oss-20b | 76.67% | — | 63.33% | 30.00% |
 | Score from Cloudflare · Llama 3.3 70B | 68.89% | 73.33% | — | 31.11% |
+
+## In plain words
+
+- With our document search, Sarvam's answers were 73% correct; the same Sarvam without our search managed only 31%.
+- Our search helps every AI we tried: Groq 72%, Cloudflare 62%, all far above Sarvam alone (31%).
+- The app is strongest at reply in the chosen language and off-topic & rule-breaking tricks (100%), and weakest at answers with several cases (50%) -- our next thing to improve.
+- Our search found the correct official PDF for 86% of the document questions.
+- Two different judges gave the same grade 84% of the time, so the grading is consistent.
 
 **What our document search adds to Sarvam:** 30.00% → 76.67% (**+46.67 points**, same judge: Groq · gpt-oss-20b)
 

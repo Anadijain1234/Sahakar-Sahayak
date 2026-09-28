@@ -58,4 +58,25 @@ export const chatService = {
       throw error;
     }
   },
+
+  // Live AI check: other AIs grade the answer (see backend/services/live_judge.py).
+  // Returns the check, or null if it isn't available. Never throws.
+  judgeAnswer: async (requestId) => {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/judge`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ request_id: requestId }),
+        });
+        if (!response.ok) return null;
+        const data = await response.json();
+        if (data.status !== "running") return data;
+      } catch (error) {
+        return null;
+      }
+      await new Promise((r) => setTimeout(r, 4000)); // another check of this answer is still running
+    }
+    return null;
+  },
 };

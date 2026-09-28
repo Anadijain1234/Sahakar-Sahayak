@@ -25,8 +25,18 @@ except ImportError:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database tables and migrations on startup
-    init_db()
+    # Initialize database tables and migrations on startup. If the database can't be
+    # reached (e.g. Neon waking up), retry; never stop the whole app from starting --
+    # chat and search don't need the database.
+    import time as _time
+    for _attempt in range(3):
+        try:
+            init_db()
+            print("🗄️ Database tables ready.")
+            break
+        except Exception as e:
+            print(f"⚠️ Database not ready (attempt {_attempt + 1}/3): {e}")
+            _time.sleep(3)
     yield
 
 

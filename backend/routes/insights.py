@@ -60,19 +60,19 @@ def _page(body: str) -> str:
 <style>
 :root{{--bg:#f7f8f6;--card:#fff;--ink:#16211b;--muted:#5f6b64;--line:#e3e7e4;--brand:#15803d;--bar:#86c99c}}
 @media (prefers-color-scheme:dark){{:root{{--bg:#0e1411;--card:#151d18;--ink:#e6ede8;--muted:#9aa8a0;--line:#26312b;--brand:#4ade80;--bar:#2f6b45}}}}
-*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}}
-main{{max-width:1100px;margin:0 auto;padding:24px 16px 48px}}h1{{font-size:22px;margin:0 0 4px}}h2{{font-size:16px;margin:0 0 10px}}
-.muted{{color:var(--muted)}}.small{{font-size:12px}}
+*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}}
+main{{max-width:1100px;margin:0 auto;padding:24px 16px 48px}}h1{{font-size:28px;margin:0 0 4px}}h2{{font-size:20px;margin:0 0 10px}}
+.muted{{color:var(--muted)}}.small{{font-size:14px}}
 .cards{{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:18px 0}}
 .card,.panel{{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}}
-.card .v{{font-size:22px;font-weight:700;font-family:ui-monospace,Menlo,Consolas,monospace}}.card .k{{font-size:12px;color:var(--muted)}}
+.card .v{{font-size:28px;font-weight:700;font-family:ui-monospace,Menlo,Consolas,monospace}}.card .k{{font-size:14px;color:var(--muted)}}
 .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:12px}}
-.bar{{display:grid;grid-template-columns:130px 1fr 40px;gap:8px;align-items:center;font-size:13px;margin:5px 0}}
+.bar{{display:grid;grid-template-columns:150px 1fr 44px;gap:8px;align-items:center;font-size:15px;margin:5px 0}}
 .bl{{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}.bn{{text-align:right;font-family:ui-monospace,Menlo,Consolas,monospace}}
 .bt{{background:var(--line);border-radius:6px;height:10px;overflow:hidden}}.bt span{{display:block;height:100%;background:var(--bar)}}
 .days{{display:flex;align-items:flex-end;gap:4px;height:90px}}.days div{{flex:1;background:var(--bar);border-radius:4px 4px 0 0;min-height:2px}}
-table{{border-collapse:collapse;width:100%;font-size:13px}}th,td{{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}
-th{{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}}
+table{{border-collapse:collapse;width:100%;font-size:14px}}th,td{{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}
+th{{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}}
 a{{color:var(--brand)}}
 </style></head><body><main>{body}</main></body></html>'''
 
@@ -97,6 +97,7 @@ def insights_page(key: str = ""):
         ("🔵 General guidance", f'{s["general_pct"]:.2f}%'),
         ("Off-topic refused", f'{s["refused_pct"]:.2f}%'),
         ("Avg response time", f'{s["avg_response_s"]:.2f} s'),
+        ("AI-check score (other AIs)", f'{s["avg_judge_score"]:.0f}/100' if s.get("avg_judge_score") is not None else "—"),
     ]
     top_day = max((d["count"] for d in s["per_day"]), default=0) or 1
     days = "".join(f'<div title="{d["count"]} questions, {d["days_ago"]} days ago" '
@@ -107,6 +108,20 @@ def insights_page(key: str = ""):
     gaps = "".join(f'<tr><td>{_e(g["question"])}</td><td>{_e(LANG_NAMES.get(g["language"], g["language"]))}</td>'
                    f'<td>{_e(TRUST_NAMES.get(g["trust_level"], g["trust_level"]))}</td></tr>'
                    for g in s["gaps"]) or '<tr><td colspan="3" class="muted">None — every question was answered from the documents.</td></tr>'
+
+    def _when(ts):
+        return datetime.datetime.fromtimestamp(ts).strftime("%d %b %H:%M") if ts else "—"
+
+    def _n(x, unit):
+        return f"{x:.0f}{unit}" if isinstance(x, (int, float)) else "—"
+
+    recent = "".join(
+        f'<tr><td class="small">{_when(r["ts"])}</td><td>{_e(r["english_question"] or r["question"])}</td>'
+        f'<td>{_e(TRUST_NAMES.get(r["trust_level"], r["trust_level"]))}</td>'
+        f'<td>{_n(r.get("final_score"), "%")}</td><td>{_n(r.get("judge_score"), "/100")}</td>'
+        f'<td class="small">{_e(AI_NAMES.get(r.get("answered_by") or "unknown", r.get("answered_by")))}</td>'
+        f'<td class="small">{(r.get("response_ms") or 0) / 1000:.1f}s</td></tr>'
+        for r in s.get("recent", [])) or '<tr><td colspan="7" class="muted">No questions yet.</td></tr>'
 
     body = f'''
     <h1>📈 Sahakar Sahayak · Insights</h1>
@@ -127,11 +142,15 @@ def insights_page(key: str = ""):
     <div class="panel" style="margin-top:12px"><h2>Most asked questions</h2>
       <table><tr><th>Question</th><th>Times</th><th>Answer</th></tr>{most}</table></div>
 
+    <div class="panel" style="margin-top:12px"><h2>Latest questions and their scorecards</h2>
+      <div style="overflow-x:auto"><table><tr><th>When</th><th>Question</th><th>Answer</th><th>Match</th><th>AI check</th><th>Answered by</th><th>Time</th></tr>{recent}</table></div></div>
+
     <div class="panel" style="margin-top:12px"><h2>⚠️ Knowledge gaps: not fully answered from official documents</h2>
       <p class="muted small">Add the missing official documents for these topics to backend/data/documents to improve answers.</p>
       <table><tr><th>Question</th><th>Language</th><th>Answer</th></tr>{gaps}</table></div>
 
-    <p class="muted small" style="margin-top:16px">Phone numbers and e-mail addresses are removed from questions before they are stored.</p>'''
+    <p class="muted small" style="margin-top:16px">Phone numbers and e-mail addresses are removed from questions before they are stored.
+    {"Stored permanently in the database." if s.get("permanent") else "Stored on the server's temporary disk: on Render's free plan it starts again after each redeploy (set DATABASE_URL to keep it)."}</p>'''
     return HTMLResponse(_page(body))
 
 
@@ -153,11 +172,11 @@ def insights_csv(key: str = "", x_insights_key: str = Header(default="")):
         return Response("Wrong or missing key.", status_code=401)
     buf = io.StringIO()
     w = csv.writer(buf)
-    w.writerow(["time", "language", "question", "english_question", "intent", "trust_level",
-                "answer_source", "top_document", "confidence", "response_ms", "topics", "answered_by"])
+    cols = ["language", "question", "english_question", "intent", "trust_level", "answer_source", "answered_by",
+            "translated_by", "top_document", "top_page", "final_score", "keyword_score", "spelling_score",
+            "meaning_score", "search_ms", "pieces_used", "response_ms", "judge_score", "judges", "topics", "request_id"]
+    w.writerow(["time"] + cols)
     for r in analytics.all_rows():
-        w.writerow([datetime.datetime.fromtimestamp(r["ts"]).isoformat(timespec="seconds"), r["language"],
-                    r["question"], r["english_question"], r["intent"], r["trust_level"], r["answer_source"],
-                    r["top_document"], r["confidence"], r["response_ms"], r["topics"], r.get("answered_by")])
+        w.writerow([datetime.datetime.fromtimestamp(r["ts"]).isoformat(timespec="seconds")] + [r.get(c) for c in cols])
     return Response(buf.getvalue(), media_type="text/csv",
                     headers={"Content-Disposition": "attachment; filename=sahakar_questions.csv"})

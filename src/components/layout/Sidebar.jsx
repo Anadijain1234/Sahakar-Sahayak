@@ -14,7 +14,9 @@ import {
   Settings, 
   User, 
   LogOut, 
-  ShieldAlert 
+  ShieldAlert,
+  BarChart3,
+  Lock
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, toggleSidebar }) => {
@@ -111,6 +113,33 @@ export const Sidebar = ({ isOpen, toggleSidebar }) => {
             </NavLink>
           );
         })}
+
+        {/* Proof & admin: easy for judges to find */}
+        <div className="pt-4 mt-3 border-t border-slate-200 dark:border-slate-800 space-y-1">
+          <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Transparency</p>
+          <a
+            href={(import.meta.env.VITE_API_URL || "https://sahakar-sahayak-4.onrender.com").replace(/\/$/, "") + "/scoreboard"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <BarChart3 className="h-5 w-5" />
+            <span>Accuracy results</span>
+          </a>
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-primary-50 dark:bg-primary-950/20 text-primary-600 dark:text-primary-400 font-semibold'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+              }`
+            }
+          >
+            <Lock className="h-5 w-5" />
+            <span>Admin insights</span>
+          </NavLink>
+        </div>
       </nav>
 
       {/* Sidebar Footer */}

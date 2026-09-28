@@ -694,7 +694,38 @@ def summarise(data):
     out["judges"]["agreement"] = _pct(same, both)
     out["judges"]["pairs_compared"] = both
     out["budget"] = data.get("budget", {})
+    out["plain_words"] = _plain_words(out)
     return out
+
+
+def _plain_words(out):
+    """A few simple sentences that explain the result to anyone."""
+    C = out["contestants"]
+    lines = []
+    app, plain = C.get("sarvam"), C.get("sarvam_plain")
+    if app and plain and app.get("score") is not None and plain.get("score") is not None:
+        lines.append(f"With our document search, Sarvam's answers were {app['score']:.0f}% correct; "
+                     f"the same Sarvam without our search managed only {plain['score']:.0f}%.")
+    others = [C[c] for c in ("groq", "cloudflare") if c in C and C[c].get("score") is not None]
+    if others and plain and plain.get("score") is not None:
+        lines.append("Our search helps every AI we tried: " +
+                     ", ".join(f"{b['short'].replace(' + docs', '')} {b['score']:.0f}%" for b in others) +
+                     (f", all far above Sarvam alone ({plain['score']:.0f}%)." if all(b["score"] >= plain["score"] + 10 for b in others)
+                      else f"; Sarvam alone scored {plain['score']:.0f}%."))
+    if app and app.get("by_group"):
+        g = {k: v["score"] for k, v in app["by_group"].items() if v.get("score") is not None}
+        if g:
+            best = [GROUP_NAMES[k].lower() for k, v in g.items() if v == max(g.values())]
+            worst = min(g, key=g.get)
+            lines.append(f"The app is strongest at {' and '.join(best[:2])} ({max(g.values()):.0f}%), "
+                         f"and weakest at {GROUP_NAMES[worst].lower()} ({g[worst]:.0f}%) -- our next thing to improve.")
+    if app and app.get("search", {}).get("hit_at_6") is not None:
+        lines.append(f"Our search found the correct official PDF for {app['search']['hit_at_6']:.0f}% of the document questions.")
+    if out["judges"].get("agreement") is not None:
+        a = out["judges"]["agreement"]
+        lines.append(f"Two different judges gave the same grade {a:.0f}% of the time"
+                     + (", so the grading is consistent." if a >= 70 else "."))
+    return lines
 
 
 # ---------------------------------------------------------------------------
@@ -708,7 +739,7 @@ def markdown(data):
     s = data.get("summary") or summarise(data)
     C = s.get("contestants", {})
     present = [c for c in CONTESTANTS if c in C]
-    L = ["# Sahakar Sahayak — 3-AI cross-judged benchmark", "",
+    L = ["# Sahakar Sahayak — Accuracy Test Results (3 AIs grade each other)", "",
          f"Generated {s.get('generated_at')} · {s.get('questions')} questions · each answer graded by the "
          f"AIs that did NOT write it · two judges agree on {_f(s['judges'].get('agreement'))} of "
          f"{s['judges'].get('pairs_compared', 0)} double-graded answers", ""]
@@ -726,6 +757,8 @@ def markdown(data):
           row("Answered / graded", lambda b: f"{b['answered']} / {b['graded']}")]
     for j, name in JUDGES.items():
         L.append(row(f"Score from {name}", lambda b, j=j: _f((b["by_judge"].get(j) or {}).get("score"))))
+    if s.get("plain_words"):
+        L += ["", "## In plain words", ""] + [f"- {x}" for x in s["plain_words"]]
     if s.get("documents_add"):
         d = s["documents_add"]
         L += ["", f"**What our document search adds to Sarvam:** {d['without']:.2f}% → {d['with']:.2f}% "

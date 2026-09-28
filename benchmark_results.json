@@ -1,7 +1,7 @@
 {
  "version": 3,
  "summary": {
-  "generated_at": "2026-09-28 00:40",
+  "generated_at": "2026-09-28 08:33",
   "questions": 45,
   "contestants": {
    "sarvam": {
@@ -449,7 +449,14 @@
     "groq_judge_tokens": 35901,
     "cf_neurons": 4576.7
    }
-  }
+  },
+  "plain_words": [
+   "With our document search, Sarvam's answers were 73% correct; the same Sarvam without our search managed only 31%.",
+   "Our search helps every AI we tried: Groq 72%, Cloudflare 62%, all far above Sarvam alone (31%).",
+   "The app is strongest at reply in the chosen language and off-topic & rule-breaking tricks (100%), and weakest at answers with several cases (50%) -- our next thing to improve.",
+   "Our search found the correct official PDF for 86% of the document questions.",
+   "Two different judges gave the same grade 84% of the time, so the grading is consistent."
+  ]
  },
  "budget": {
   "2026-09-28": {

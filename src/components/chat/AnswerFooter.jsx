@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { chatService } from '../../services/chatService';
 import {
   CheckCircle2, AlertCircle, Info, FileText, ExternalLink,
-  Volume2, Send, Search, ChevronDown, ChevronUp, Phone,
+  Volume2, Send, Search, ChevronDown, ChevronUp, Phone, Scale,
 } from 'lucide-react';
 
 // Short, farmer-friendly labels in the language chosen on the website.
@@ -16,6 +17,10 @@ const LABELS = {
     playing: 'Playing…',
     share: 'Share',
     help: 'Need more help? Talk to a person',
+    check: 'AI check',
+    checking: 'Other AIs are checking this answer…',
+    good: 'Good', partly: 'Partly right', poor: 'Needs checking',
+    scorecard: 'Scorecard',
   },
   hi: {
     verified: 'आधिकारिक दस्तावेज़ से सत्यापित',
@@ -27,6 +32,10 @@ const LABELS = {
     playing: 'चल रहा है…',
     share: 'शेयर करें',
     help: 'और मदद चाहिए? किसी व्यक्ति से बात करें',
+    check: 'AI जाँच',
+    checking: 'दूसरे AI इस उत्तर की जाँच कर रहे हैं…',
+    good: 'सही', partly: 'आंशिक रूप से सही', poor: 'जाँच ज़रूरी',
+    scorecard: 'स्कोरकार्ड',
   },
   kn: {
     verified: 'ಅಧಿಕೃತ ದಾಖಲೆಯಿಂದ ಪರಿಶೀಲಿಸಲಾಗಿದೆ',
@@ -38,6 +47,10 @@ const LABELS = {
     playing: 'ಪ್ಲೇ ಆಗುತ್ತಿದೆ…',
     share: 'ಹಂಚಿಕೊಳ್ಳಿ',
     help: 'ಇನ್ನಷ್ಟು ಸಹಾಯ ಬೇಕೇ? ವ್ಯಕ್ತಿಯೊಂದಿಗೆ ಮಾತನಾಡಿ',
+    check: 'AI ಪರಿಶೀಲನೆ',
+    checking: 'ಬೇರೆ AI ಗಳು ಈ ಉತ್ತರವನ್ನು ಪರಿಶೀಲಿಸುತ್ತಿವೆ…',
+    good: 'ಸರಿ', partly: 'ಭಾಗಶಃ ಸರಿ', poor: 'ಪರಿಶೀಲನೆ ಅಗತ್ಯ',
+    scorecard: 'ಸ್ಕೋರ್‌ಕಾರ್ಡ್',
   },
 };
 
@@ -74,6 +87,68 @@ const getTrustLevel = (message) => {
 
 const fmt = (value) => (typeof value === 'number' ? `${value.toFixed(2)}%` : '—');
 
+// ---- Live AI check (other AIs grade the answer) ----
+const CHECK_STORE = 'sahakar_ai_checks';
+const readCheck = (rid) => {
+  try { return (JSON.parse(localStorage.getItem(CHECK_STORE) || '{}') || {})[rid] || null; } catch { return null; }
+};
+const saveCheck = (rid, data) => {
+  try {
+    const all = JSON.parse(localStorage.getItem(CHECK_STORE) || '{}') || {};
+    all[rid] = data;
+    const keys = Object.keys(all);
+    if (keys.length > 100) keys.slice(0, keys.length - 100).forEach((k) => delete all[k]);
+    localStorage.setItem(CHECK_STORE, JSON.stringify(all));
+  } catch { /* storage unavailable: the check just won't survive a refresh */ }
+};
+const inFlight = {};   // one check per answer, even if the message re-renders
+const runCheck = (rid) => {
+  if (!inFlight[rid]) {
+    inFlight[rid] = chatService.judgeAnswer(rid).then((data) => {
+      if (data && data.status === 'ok') saveCheck(rid, data);
+      return data;
+    });
+  }
+  return inFlight[rid];
+};
+const VERDICT_STYLE = {
+  good: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300',
+  partly: 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300',
+  poor: 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300',
+};
+const JUDGE_SHORT = { groq: 'Groq', cloudflare: 'Cloudflare', sarvam: 'Sarvam' };
+
+const AiCheck = ({ check }) => (
+  <div className="rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 space-y-2">
+    <div className="flex items-baseline justify-between gap-2">
+      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Checked by other AIs</p>
+      {typeof check.score === 'number' && (
+        <p className="text-sm font-mono font-black text-slate-800 dark:text-slate-100">{check.score}<span className="text-[10px] text-slate-400">/100</span></p>
+      )}
+    </div>
+    {(check.judges || []).map((j) => (
+      <div key={j.judge} className="text-[11px] border-t border-slate-100 dark:border-slate-800 pt-1.5">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="font-semibold text-slate-700 dark:text-slate-200">{j.name}</span>
+          {j.status === 'ok' ? (
+            <>
+              <span className={`px-1.5 py-0.5 rounded font-bold ${VERDICT_STYLE[j.grade] || ''}`}>{j.grade}</span>
+              <span className="text-slate-500 dark:text-slate-400">
+                Faithful to documents {j.faithful ?? '—'}/10 · Answers the question {j.helpful ?? '—'}/10
+                {j.language_ok === true ? ' · Right language ✓' : j.language_ok === false ? ' · Wrong language ✗' : ''}
+              </span>
+            </>
+          ) : (
+            <span className="text-slate-400">{j.status === 'limit' ? 'daily check limit reached' : 'not available right now'}</span>
+          )}
+        </div>
+        {j.reason && <p className="text-slate-500 dark:text-slate-400 italic mt-0.5">"{j.reason}"</p>}
+      </div>
+    ))}
+    <p className="text-[10px] text-slate-400">An AI never checks its own answer. Other AIs compare it with the official passages.</p>
+  </div>
+);
+
 const ScoreBar = ({ label, value, hint }) => (
   <div>
     <div className="flex justify-between text-[11px] mb-1">
@@ -97,16 +172,18 @@ const Stat = ({ label, value }) => (
   </div>
 );
 
-const SearchReport = ({ report }) => {
+const SearchReport = ({ report, check, title }) => {
   const meaningOn = report.meaning_available && typeof report.meaning_score === 'number';
   return (
     <div className="mt-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3.5 animate-message-appear">
       <div className="flex items-baseline justify-between">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Search report</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{title}</p>
         <p className="text-sm font-mono font-black text-primary-700 dark:text-primary-300">
           {fmt(report.final_confidence)} <span className="text-[10px] font-sans font-semibold text-slate-400">final confidence</span>
         </p>
       </div>
+
+      {check && check.judges && <AiCheck check={check} />}
 
       <div className="space-y-2.5">
         <ScoreBar label="Keyword match (BM25)" value={report.keyword_score} hint="Important words of the question found exactly" />
@@ -182,6 +259,22 @@ export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, 
   const best = message.sources && message.sources.length > 0 ? message.sources[0] : null;
   const report = message.search_report;
   const showSource = best && (trust === 'verified' || trust === 'partial');
+  const rid = report && report.request_id;
+  const [check, setCheck] = useState(() => (rid ? readCheck(rid) : null));
+  const [checking, setChecking] = useState(false);
+
+  // Ask other AIs to grade this answer, once, right after it appears
+  useEffect(() => {
+    if (!rid || check || !message.answered_by || message.answered_by === 'search_only') return undefined;
+    const age = Date.now() - Date.parse(message.time || 0);
+    if (!(age >= 0 && age < 20 * 60 * 1000)) return undefined;   // old chats: don't re-check
+    let cancelled = false;
+    setChecking(true);
+    runCheck(rid).then((data) => {
+      if (!cancelled && data && data.status === 'ok') setCheck(data);
+    }).finally(() => { if (!cancelled) setChecking(false); });
+    return () => { cancelled = true; };
+  }, [rid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleShare = async () => {
     const lines = ['🌾 Sahakar Sahayak', ''];
@@ -191,6 +284,7 @@ export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, 
       lines.push('', `📄 ${best.documentName}${best.page ? ` (${L.page} ${best.page})` : ''}`);
       if (best.link) lines.push(best.link);
     }
+    if (check && typeof check.score === 'number') lines.push('', `⚖️ ${L.check}: ${L[check.verdict] || check.verdict} (${check.score}/100)`);
     lines.push('', `${window.location.origin}`);
     const text = lines.join('\n');
 
@@ -243,7 +337,25 @@ export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, 
         </p>
       )}
 
-      {/* 1b. Talk to a person: official helplines (only under answers that aren't fully verified) */}
+      {/* 1b. Live AI check: short verdict (details inside the scorecard) */}
+      {checking && !check && (
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 px-1 flex items-center gap-1.5 animate-pulse">
+          <Scale className="h-3.5 w-3.5" /> {L.checking}
+        </p>
+      )}
+      {check && typeof check.score === 'number' && (
+        <p className="text-xs text-slate-600 dark:text-slate-300 px-1 flex flex-wrap items-center gap-1.5">
+          <Scale className="h-3.5 w-3.5" />
+          <span className="font-semibold">{L.check}:</span>
+          <span className={`px-1.5 py-0.5 rounded-md font-bold ${VERDICT_STYLE[check.verdict] || ''}`}>{L[check.verdict] || check.verdict}</span>
+          <span className="font-mono font-bold">{check.score}/100</span>
+          <span className="text-slate-400">
+            · {(check.judges || []).filter((j) => j.status === 'ok').map((j) => JUDGE_SHORT[j.judge] || j.judge).join(' + ')}
+          </span>
+        </p>
+      )}
+
+      {/* 1c. Talk to a person: official helplines (only under answers that aren't fully verified) */}
       {message.helplines && message.helplines.length > 0 && (
         <div className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
           <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
@@ -282,21 +394,21 @@ export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, 
             {L.share}
           </button>
         )}
-        {report && trust && trust !== 'refused' && (
+        {report && ((trust && trust !== 'refused') || check) && (
           <button
             onClick={() => setShowReport((v) => !v)}
             className={`${btn} ${showReport ? 'border-primary-300 text-primary-700 bg-primary-50 dark:bg-primary-950/30 dark:text-primary-300 dark:border-primary-800' : btnIdle}`}
             aria-expanded={showReport}
           >
             <Search className="h-3.5 w-3.5" />
-            Search report
+            {L.scorecard}
             {showReport ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </button>
         )}
       </div>
 
       {/* 3. Detailed report (hidden until tapped) */}
-      {showReport && report && <SearchReport report={report} />}
+      {showReport && report && <SearchReport report={report} check={check} title={L.scorecard} />}
     </div>
   );
 };
