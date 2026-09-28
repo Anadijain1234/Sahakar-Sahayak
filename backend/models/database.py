@@ -13,27 +13,36 @@ DEFAULT_DB_PATH = os.path.join(DATA_DIR, "sahakar_sahayak.db")
 # DATABASE_URL set (e.g. a free Neon Postgres) -> permanent storage: accounts and the
 # Insights log survive redeploys. Not set -> a SQLite file, which on Render's free plan
 # is wiped on every redeploy/restart (fine for local development).
-DATABASE_URL = os.getenv("DATABASE_URL", "").strip() or f"sqlite:///{DEFAULT_DB_PATH}"
-if DATABASE_URL.startswith("postgres://"):          # some providers use the short form
-    DATABASE_URL = "postgresql://" + DATABASE_URL[len("postgres://"):]
+SQLITE_URL = f"sqlite:///{DEFAULT_DB_PATH}"
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip().strip('"').strip("'") or SQLITE_URL
+# Use the "psycopg" (version 3) Postgres driver: it is in requirements.txt and works on new Python versions.
+for _prefix in ("postgres://", "postgresql://"):
+    if DATABASE_URL.startswith(_prefix):
+        DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL[len(_prefix):]
+        break
+
+
+def _make_engine(url):
+    if url.startswith("sqlite"):
+        # SQLite requires check_same_thread=False for multithreaded FastAPI requests
+        return create_engine(url, connect_args={"check_same_thread": False}, echo=False)
+    # Neon sleeps after a few idle minutes and closes old connections: pool_pre_ping checks a
+    # connection before using it and reconnects if needed. prepare_threshold=None keeps it
+    # working through Neon's connection pooler.
+    return create_engine(url, echo=False, pool_pre_ping=True, pool_recycle=240, pool_size=3, max_overflow=2,
+                         connect_args={"connect_timeout": 15, "prepare_threshold": None})
+
+
+try:
+    engine = _make_engine(DATABASE_URL)
+except Exception as _e:
+    # Never let a database setting stop the whole app: fall back to the temporary SQLite file.
+    print(f"⚠️ DATABASE_URL could not be used ({type(_e).__name__}: {_e}) -- falling back to a temporary SQLite file.")
+    DATABASE_URL = SQLITE_URL
+    engine = _make_engine(DATABASE_URL)
+
 IS_SQLITE = DATABASE_URL.startswith("sqlite")
 IS_PERMANENT = not IS_SQLITE
-
-if IS_SQLITE:
-    # SQLite requires check_same_thread=False for multithreaded FastAPI requests
-    connect_args, engine_options = {"check_same_thread": False}, {}
-else:
-    # Neon sleeps after a few idle minutes and closes old connections:
-    # pool_pre_ping checks a connection before using it and reconnects if needed.
-    connect_args = {"connect_timeout": 15}
-    engine_options = {"pool_pre_ping": True, "pool_recycle": 240, "pool_size": 3, "max_overflow": 2}
-
-engine = create_engine(
-    DATABASE_URL,
-    connect_args=connect_args,
-    echo=False,
-    **engine_options
-)
 
 try:
     _where = "SQLite file (temporary on Render's free plan)" if IS_SQLITE else \

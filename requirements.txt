@@ -53,4 +53,4 @@ SQLAlchemy
 PyJWT
 qrcode
 pillow
-psycopg2-binary
+psycopg[binary]
