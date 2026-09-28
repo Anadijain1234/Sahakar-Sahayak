@@ -254,6 +254,54 @@ export const authService = {
       throw error;
     }
   },
+
+  /**
+   * Forgot password, step 1: send a reset code to the email or mobile number.
+   * Uses the existing backend endpoint (/password-reset/send-otp): the code is made in Python and
+   * sent by Brevo (email) or the SMS gateway (mobile), exactly like registration.
+   * A mobile number is tried as typed, then as +91XXXXXXXXXX and as 10 digits (accounts may be
+   * saved either way). Returns the identifier that worked -- step 2 must use the same one.
+   */
+  sendResetCode: async (identifier) => {
+    const typed = identifier.trim();
+    const digits = typed.replace(/\D/g, '');
+    const isPhone = !typed.includes('@') && digits.length >= 10;
+    const tries = isPhone ? [...new Set([typed, `+91${digits.slice(-10)}`, digits.slice(-10)])] : [typed];
+    let lastError = null;
+    for (const id of tries) {
+      const response = await fetch(getUrl('/password-reset/send-otp'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: id }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) return { identifier: id, message: data.message };
+      lastError = new Error(data.detail || data.message || 'Could not send the code. Please try again.');
+      if (response.status !== 404) break;       // only "account not found" is worth another format
+    }
+    console.error('[authService] sendResetCode error:', lastError);
+    throw lastError;
+  },
+
+  /**
+   * Forgot password, step 2: check the code and save the new password (/password-reset/confirm).
+   */
+  resetPassword: async ({ identifier, otp, newPassword }) => {
+    const response = await fetch(getUrl('/password-reset/confirm'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, otp: otp.trim(), new_password: newPassword }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const detail = String(data.detail || data.message || '');
+      const error = new Error(detail || 'Could not change the password. Please try again.');
+      error.status = response.status;
+      console.error('[authService] resetPassword error:', error);
+      throw error;
+    }
+    return data;
+  },
 };
 
 export default authService;

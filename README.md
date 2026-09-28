@@ -44,12 +44,14 @@ Every answer tells the user **where it came from**: an official government PDF (
 | 🧾 **Scorecard (per answer)** | Tap to see the real numbers behind an answer: the AI check with each judge's reason, keyword %, spelling %, meaning %, final confidence, passages searched, search time, total time, which AI answered and the request ID. |
 | 🚫 **Stays on topic** | Questions about cricket, movies, politics etc. are politely refused — in the user's language — and tricks like *"ignore your instructions"* are ignored. |
 | 🧐 **Corrects wrong ideas** | If a question assumes something false (*"KCC is only for land owners, right?"*), the answer politely corrects it using the official rule. |
+| 🛡️ **Answer safeguards** | If an answer comes back in the wrong language, it is translated into the user's language before it is shown. If the AI wrongly refuses a real farming question (e.g. crop disease), it gets a second chance. A question that mixes a real request with an off-topic one (*"tell me about PM-KISAN and write a cricket poem"*) gets the real answer; only the off-topic part is declined. Weather: it says honestly that it has no live forecasts and points to IMD. When a question names a scheme, the AI always sees passages from that scheme's own PDF. |
 | 🛟 **Never goes silent** | Triple AI fallback: **Sarvam → Groq → Cloudflare**. If all three are down, **search-only mode** shows the exact passage from the official PDF. Every step is logged with a request ID. |
+| 🌾 **Mandi prices (only when asked)** | Ask *"tomato bhav Kolar mandi?"* or *"ಈರುಳ್ಳಿ ಬೆಲೆ ಎಷ್ಟು?"* and the answer gives the latest Karnataka mandi prices (min / usual / max, ₹ per quintal, with the date) plus a small price table and the official AGMARKNET link. The prices are official AGMARKNET data (Govt. of India), read from a file that the open-source [karnataka-mandi-rates](https://github.com/Sheethal00/karnataka-mandi-rates) project refreshes every hour — so the farmer never waits for the slow government site, and no API key is needed. Prices appear **only** for price questions: PM-Kisan, KCC, MSP, insurance or loan questions never get them, and every other question works exactly as before. Prices older than 7 days are not shown (only the AGMARKNET link). |
 | ☎️ **Talk to a person** | Under answers that aren't fully verified (and under complaints), the app shows official helplines — Kisan Call Centre 1800-180-1551, crop-insurance helpline 14447, PM-KISAN helpdesk, the Registrar's office — tap to call. |
 | 📈 **Admin insights** | A password-protected `/admin` page: every recent question with its **scorecard and AI-check score**, most asked questions, languages, schemes, which AI answered, and the **knowledge gaps** — questions the PDFs couldn't answer, i.e. which document to add next. Download everything as CSV. |
 | 🔊 **Voice in, voice out** | Speak your question and hear the answer. Speech-to-text has its own 3-level fallback (**Sarvam → Bhashini → Google**), and read-aloud falls back from **Bhashini → Google** — so voice also never goes silent. (English, Hindi, Kannada; Nepali voice is planned.) |
 | 📤 **Share the full answer** | One tap shares the question, full answer and source link to WhatsApp (or any app on a phone). |
-| 🔐 **Secure sign-up** | Email **and** phone OTP verification, hashed OTPs, attempt limits, resend cooldown; the account is only created after both are verified. |
+| 🔐 **Secure sign-up** | Email **and** phone OTP verification, hashed OTPs, attempt limits, resend cooldown; the account is only created after both are verified. **Forgot password?** on the login page: enter your email or mobile, get a 6-digit code (email via Brevo, SMS via the gateway), then set a new password. |
 | 🤖 **Telegram bot** | The same assistant on Telegram, with a language menu (Kannada / English / Hindi). |
 | 👤 **Easy to use** | Guest mode (no sign-up needed), a **New chat** button, and you stay logged in when the page is refreshed. |
 | 🗄️ **Nothing gets lost** | User accounts and the admin insights are stored in a free permanent database (Neon Postgres), so they survive server restarts. |
@@ -69,6 +71,9 @@ flowchart LR
     D --> D2["Spelling-tolerant match<br/>(3-letter word parts)"]
     D --> D3["Meaning match<br/>(Cloudflare bge-m3)"]
     D1 & D2 & D3 --> E["Best 6 passages<br/>+ real scores"]
+    C --> P{"Price question?<br/>(price / bhav / ಬೆಲೆ + a crop)"}
+    P -- "yes (only then)" --> P1["Latest Karnataka mandi prices<br/>(AGMARKNET data via GitHub file)"]
+    P1 --> F
     E --> F["Sarvam AI writes a short answer<br/>in the user's language<br/>(backups: Groq → Cloudflare → search-only)"]
     F --> G["Trust card + source link<br/>+ scorecard + share"]
     F --> J["Live AI check:<br/>other AIs grade the answer"]
@@ -241,7 +246,7 @@ flowchart TD
 | `GET` | `/api/auth/register/status/{id}` | Verification progress |
 | `POST` | `/api/auth/login` | Log in with email **or** phone + password |
 | `GET` / `PUT` | `/api/auth/me` · `/api/auth/profile` | Profile (Bearer token) |
-| `POST` | `/api/auth/password-reset/send-otp` · `/confirm` | Password reset |
+| `POST` | `/api/auth/password-reset/send-otp` · `/confirm` | Forgot password: send a code to the email / mobile, then set the new password |
 
 **`/query` response (main fields)**
 
@@ -282,6 +287,7 @@ Set these in Render → Environment (never commit real values). See `.env.exampl
 | `EMAIL_API_KEY`, `SENDER_EMAIL` | Email OTP (Brevo) |
 | `GATEWAY_API_KEY` | Phone OTP (SMS gateway app) |
 | `DATABASE_URL` | Permanent database for user accounts and admin insights — a free [Neon](https://neon.com) Postgres connection string. Without it, a SQLite file is used, which Render's free plan wipes on every redeploy |
+| `MANDI_PRICES_URL` | Optional: a different copy of the mandi price file (`live.json`). Default: the karnataka-mandi-rates GitHub file. No key needed |
 | `PUBLIC_BACKEND_URL` | Public backend address used in PDF links |
 | `TELEGRAM_BOT_TOKEN`, `API_URL` | Telegram bot |
 | `VITE_API_URL` (frontend) | Backend address for the React app |
@@ -328,7 +334,7 @@ npm run build                    # frontend build check
 backend/
   main.py                  FastAPI app, voice endpoints, PDF serving
   routes/query.py          /query pipeline
-  routes/auth.py           sign-up, OTP, login
+  routes/auth.py           sign-up, OTP, login, forgot password
   routes/scoreboard.py     live /scoreboard page
   routes/insights.py       admin insights (/insights, /insights.json, /insights.csv)
   services/rag_service.py  question rewriting, answer, trust level, scorecard numbers, search-only mode
@@ -336,6 +342,7 @@ backend/
   services/llm_chain.py    triple AI fallback: Sarvam -> Groq -> Cloudflare, with logs
   services/reqlog.py       request IDs for the logs
   services/help_contacts.py official helplines ("talk to a person")
+  services/mandi_prices.py latest Karnataka mandi prices, only for price questions
   services/analytics.py    question log for admin insights, saved in the database (phone numbers / emails removed)
   models/database.py       database connection (Neon Postgres, or SQLite locally)
   services/retriever.py    hybrid search (BM25 + word parts + Cloudflare meaning)
@@ -347,7 +354,8 @@ anadi_voice_engine.py      speech-to-text / text-to-speech with fallbacks
 src/
   pages/Chat.jsx           chat screen
   pages/Admin.jsx          admin insights (/admin)
-  components/chat/AnswerFooter.jsx  trust card, AI check, helplines, share, scorecard
+  pages/Login.jsx          login + forgot password
+  components/chat/AnswerFooter.jsx  trust card, AI check, mandi price table, helplines, share, scorecard
 evaluate_rag.py            benchmark: 3 AIs answer, the other AIs judge
 benchmark_questions.json   the 45 test questions with answer keys and PDF quotes
 benchmark_questions_all.json  bank of 200 questions
@@ -361,6 +369,11 @@ test_search.py             search smoke test
 - Knowledge base covers Karnataka + central cooperative law; other states' Acts can be added by dropping PDFs into `backend/data/documents/`.
 - Scanned (image-only) PDFs can't be read yet — OCR is a planned addition.
 - Planned: state selection for state-specific rules and more states' Acts.
+- Each question is answered on its own: a follow-up like *"and what documents for that?"* doesn't remember the previous question yet (conversation memory is planned).
+- Schemes whose official PDF isn't in the knowledge base (e.g. PM Kisan **Maandhan** pension) get 🔵 general guidance, and similar-sounding names can pull passages from the wrong PDF. Adding that scheme's PDF fixes it.
+- Mandi prices cover **Karnataka markets only**, and are only as fresh as the government's AGMARKNET feed (the date is always shown). Other states: the answer links to AGMARKNET.
+- Calculations (e.g. working out a KCC limit from the scale of finance) are done by the AI and are less reliable than looking up a fact.
+- The page-level search is the weakest link: the right PDF is usually found, but not always the exact page.
 
 ---
 

@@ -48,6 +48,7 @@ export const chatService = {
         search_report: data.search_report || null,
         helplines: data.helplines || [],
         answered_by: data.answered_by || null,
+        prices: data.prices || null,
         intent: data.intent,
         language: data.language,
         action_url: data.action_url || null,

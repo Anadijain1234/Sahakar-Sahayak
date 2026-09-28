@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { chatService } from '../../services/chatService';
 import {
   CheckCircle2, AlertCircle, Info, FileText, ExternalLink,
-  Volume2, Send, Search, ChevronDown, ChevronUp, Phone, Scale,
+  Volume2, Send, Search, ChevronDown, ChevronUp, Phone, Scale, BarChart3,
 } from 'lucide-react';
 
 // Short, farmer-friendly labels in the language chosen on the website.
@@ -251,6 +251,86 @@ const SearchReport = ({ report, check, title }) => {
   );
 };
 
+// Mandi prices (backend/services/mandi_prices.py) -- only ever sent for price questions.
+const PRICE_LABELS = {
+  en: { title: 'Latest mandi prices', unit: '₹ per quintal', market: 'Market', min: 'Min', modal: 'Usual', max: 'Max', asOf: 'As of', source: 'Source', via: 'via GitHub', check: 'Check mandi prices' },
+  hi: { title: 'ताज़ा मंडी भाव', unit: '₹ प्रति क्विंटल', market: 'मंडी', min: 'न्यूनतम', modal: 'आम भाव', max: 'अधिकतम', asOf: 'तारीख', source: 'स्रोत', via: 'GitHub द्वारा', check: 'मंडी भाव देखें' },
+  kn: { title: 'ಇತ್ತೀಚಿನ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ', unit: '₹ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್', market: 'ಮಾರುಕಟ್ಟೆ', min: 'ಕನಿಷ್ಠ', modal: 'ಸಾಮಾನ್ಯ', max: 'ಗರಿಷ್ಠ', asOf: 'ದಿನಾಂಕ', source: 'ಮೂಲ', via: 'GitHub ಮೂಲಕ', check: 'ಮಾರುಕಟ್ಟೆ ಬೆಲೆ ನೋಡಿ' },
+  ne: { title: 'पछिल्लो मण्डी भाउ', unit: '₹ प्रति क्विन्टल', market: 'मण्डी', min: 'न्यूनतम', modal: 'सामान्य', max: 'अधिकतम', asOf: 'मिति', source: 'स्रोत', via: 'GitHub मार्फत', check: 'मण्डी भाउ हेर्नुहोस्' },
+};
+
+const rupees = (n) => (typeof n === 'number' && Number.isFinite(n) ? Math.round(n).toLocaleString('en-IN') : '—');
+
+const PricesCard = ({ prices, language }) => {
+  const P = PRICE_LABELS[language] || PRICE_LABELS.en;
+  const rows = Array.isArray(prices.records) ? prices.records : [];
+  const portal = (Array.isArray(prices.links) && prices.links[0]) || { label: 'AGMARKNET (Govt. of India)', url: 'https://agmarknet.gov.in/' };
+  const linkCls = 'font-semibold text-primary-700 dark:text-primary-300 hover:underline inline-flex items-center gap-0.5';
+
+  // Price asked, but no fresh prices for it: just the official portal link
+  if (prices.status !== 'ok' || rows.length === 0) {
+    return (
+      <p className="text-xs text-slate-600 dark:text-slate-300 px-1 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+        <BarChart3 className="h-3.5 w-3.5 text-emerald-600" />
+        <span className="font-semibold">{P.check}:</span>
+        <a href={portal.url} target="_blank" rel="noopener noreferrer" className={linkCls}>
+          {portal.label} <ExternalLink className="h-3 w-3" />
+        </a>
+      </p>
+    );
+  }
+
+  return (
+    <div className="px-3 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/20">
+      <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-1.5 flex flex-wrap items-center gap-x-1.5">
+        <BarChart3 className="h-3.5 w-3.5" />
+        {P.title} · {prices.commodity}
+        <span className="font-medium text-emerald-700/70 dark:text-emerald-400/70">({P.unit})</span>
+      </p>
+      <table className="w-full text-xs text-slate-700 dark:text-slate-300">
+        <thead>
+          <tr className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <th className="text-left font-semibold pb-1">{P.market}</th>
+            <th className="text-right font-semibold pb-1 pl-2">{P.min}</th>
+            <th className="text-right font-semibold pb-1 pl-2">{P.modal}</th>
+            <th className="text-right font-semibold pb-1 pl-2">{P.max}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={`${r.market}-${r.variety}-${i}`} className="border-t border-emerald-100 dark:border-emerald-900/40">
+              <td className="py-1 pr-1">
+                <span className="font-semibold">{r.market}</span>
+                <span className="block text-[10px] text-slate-500 dark:text-slate-400">
+                  {[r.district, r.variety && r.variety !== prices.commodity ? r.variety : null].filter(Boolean).join(' · ')}
+                </span>
+              </td>
+              <td className="py-1 pl-2 text-right font-mono">{rupees(r.min_price)}</td>
+              <td className="py-1 pl-2 text-right font-mono font-bold text-emerald-800 dark:text-emerald-300">{rupees(r.modal_price)}</td>
+              <td className="py-1 pl-2 text-right font-mono">{rupees(r.max_price)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-1.5">
+        {prices.date && <span>{P.asOf} {prices.date} ·</span>}
+        <span>{P.source}:</span>
+        <a href={portal.url} target="_blank" rel="noopener noreferrer" className={linkCls}>
+          {portal.label} <ExternalLink className="h-3 w-3" />
+        </a>
+        {prices.via_url && (
+          <>
+            <span className="text-slate-300">·</span>
+            <a href={prices.via_url} target="_blank" rel="noopener noreferrer" className={linkCls}>
+              {P.via} <ExternalLink className="h-3 w-3" />
+            </a>
+          </>
+        )}
+      </p>
+    </div>
+  );
+};
+
 export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, isPlayingAudio }) => {
   const [showReport, setShowReport] = useState(false);
   const L = LABELS[language] || LABELS.en;
@@ -283,6 +363,12 @@ export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, 
     if (showSource) {
       lines.push('', `📄 ${best.documentName}${best.page ? ` (${L.page} ${best.page})` : ''}`);
       if (best.link) lines.push(best.link);
+    }
+    const pr = message.prices;
+    if (pr && pr.status === 'ok' && Array.isArray(pr.records) && pr.records.length) {
+      lines.push('', `📈 ${pr.commodity} (₹/quintal${pr.date ? `, ${pr.date}` : ''}):`);
+      pr.records.slice(0, 3).forEach((r) => lines.push(`• ${r.market}: ${rupees(r.modal_price)}`));
+      lines.push(pr.source_url);
     }
     if (check && typeof check.score === 'number') lines.push('', `⚖️ ${L.check}: ${L[check.verdict] || check.verdict} (${check.score}/100)`);
     lines.push('', `${window.location.origin}`);
@@ -354,6 +440,9 @@ export const AnswerFooter = ({ message, question, language = 'en', onReadAloud, 
           </span>
         </p>
       )}
+
+      {/* 1b2. Live mandi prices (price questions only) */}
+      {message.prices && <PricesCard prices={message.prices} language={language} />}
 
       {/* 1c. Talk to a person: official helplines (only under answers that aren't fully verified) */}
       {message.helplines && message.helplines.length > 0 && (

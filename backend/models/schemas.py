@@ -20,7 +20,8 @@ class QueryResponse(BaseModel):
     answer_source: Optional[str] = None      # documents | general | refused | error
     trust_level: Optional[str] = None        # verified | partial | general | refused | error
     search_report: Optional[Dict[str, Any]] = None  # numbers shown in the "Search report" panel
-    helplines: List[Dict[str, Any]] = []
-    answered_by: Optional[str] = None             # official helplines shown under unverified answers
+    helplines: List[Dict[str, Any]] = []             # official helplines shown under unverified answers
+    answered_by: Optional[str] = None                # which AI wrote the answer
+    prices: Optional[Dict[str, Any]] = None          # live mandi prices for price questions (mandi_prices.py)
     action_url: Optional[str] = None
     qr_code_base64: Optional[str] = None

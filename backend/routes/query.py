@@ -19,6 +19,7 @@ from backend.services.retriever import search
 from backend.services.help_contacts import helplines_for
 from backend.services import analytics
 from backend.services import live_judge
+from backend.services import mandi_prices
 
 # Friendly names for the Insights page (keys = file-name parts used by scheme routing)
 TOPIC_NAMES = {
@@ -57,6 +58,14 @@ def query(request: QueryRequest):
         routed = search_stats.get("scheme_routing") or []
         log("QUERY", f"📚 intent={intent} | {len(retrieved_docs)} pieces found | routed to {routed or 'none'}")
 
+        # 5b. Mandi prices -- ONLY for price questions; every other question gets None and runs as before
+        try:
+            prices = mandi_prices.lookup(cleaned_query, english_query)
+        except Exception as e:
+            log("PRICES", f"⚠️ price lookup skipped: {e}")
+            prices = None
+        price_context = mandi_prices.as_context(prices)
+
         # 6. Generate answer in user's UI language (Sarvam -> Groq -> Cloudflare -> search-only)
         result = get_answer(
             query=english_query,
@@ -65,7 +74,9 @@ def query(request: QueryRequest):
             retrieved_docs=retrieved_docs,
             search_stats=search_stats,
             original_query=cleaned_query,
+            extra_context=price_context,
         )
+        result["prices"] = prices
 
         result["language"] = language
         result["intent"] = intent
@@ -90,7 +101,7 @@ def query(request: QueryRequest):
             trust_level=result.get("trust_level"), answer_source=result.get("answer_source"),
             top_document=(result.get("sources") or [{}])[0].get("document"),
             confidence=result.get("confidence"), response_ms=total_ms,
-            topics=[TOPIC_NAMES.get(d, d) for d in routed],
+            topics=[TOPIC_NAMES.get(d, d) for d in routed] + (["Mandi prices"] if prices else []),
             answered_by=result.get("answered_by"),
             report=result.get("search_report"),
             top_page=(result.get("sources") or [{}])[0].get("page"),
@@ -98,7 +109,8 @@ def query(request: QueryRequest):
         # 9. Keep what the AI judges need; the website asks for the check right after showing the answer
         live_judge.remember(rid, cleaned_query, english_query, result.get("answer"), language,
                             result.get("trust_level"), result.get("answered_by"),
-                            [d.get("text", "") for d in retrieved_docs] if result.get("answer_source") == "documents" else [])
+                            ([price_context] if price_context else [])
+                            + ([d.get("text", "") for d in retrieved_docs] if result.get("answer_source") == "documents" else []))
         log("QUERY", f"🏁 finished in {total_ms / 1000:.2f}s | translated by {translated_by or 'none'} | "
                      f"answered by {result.get('answered_by')} | trust={result.get('trust_level')} | "
                      f"helplines={len(result['helplines'])}")

@@ -92,6 +92,8 @@ SCHEME_ROUTES = [
     (r"\b(jan aushadhi|common service cent(re|er)s?|computeri[sz]ation of pacs|pacs computeri[sz]ation)\b", "Initiatives"),
 ]
 ROUTE_BONUS = 0.12      # ranking bonus for the named scheme's own PDF (does not change the shown score)
+ROUTE_MIN_MATCH = 0.30  # a named scheme's passage this relevant can always be given to the AI
+ROUTE_MIN_PIECES = 2    # ... at least this many passages from the named scheme's own PDF
 
 STOPWORDS = {
     "the", "and", "for", "are", "was", "were", "with", "that", "this", "from", "what",
@@ -457,6 +459,7 @@ def search(query: str, top_k: int = MIN_RESULTS, boost_terms: str = ""):
 
     # 4) Score every candidate on all three signals
     scored = []
+    route_backup = []
     for doc_id in shortlist:
         text = chunks[doc_id]["text"]
         kw = _exact_keyword_score(query_words, text)
@@ -470,13 +473,31 @@ def search(query: str, top_k: int = MIN_RESULTS, boost_terms: str = ""):
             raw, ms = None, 0.0
             final = 0.7 * kw + 0.3 * sp
             keep = kw >= INCLUDE_KEYWORD
+        in_route = bool(routed) and any(d.lower() in chunks[doc_id]["document"].lower() for d in routed)
         if keep:
-            bonus = ROUTE_BONUS if routed and any(d.lower() in chunks[doc_id]["document"].lower() for d in routed) else 0.0
+            bonus = ROUTE_BONUS if in_route else 0.0
             scored.append((final + bonus, word_rank.get(doc_id, 0.0), doc_id, kw, sp, raw, ms, final))
+        elif in_route and (kw >= ROUTE_MIN_MATCH or ms >= ROUTE_MIN_MATCH):
+            route_backup.append((final, word_rank.get(doc_id, 0.0), doc_id, kw, sp, raw, ms, final))
     scored.sort(reverse=True)
+    picked = scored[:top_k]
+
+    # The question names a scheme (e.g. "Per Drop More Crop"): make sure the AI sees at least
+    # two passages from that scheme's own PDF, using the last slots if needed.
+    if routed:
+        def _is_routed(x):
+            return any(d.lower() in chunks[x[2]]["document"].lower() for d in routed)
+        have = [x for x in picked if _is_routed(x)]
+        extra = sorted([x for x in scored[top_k:] if _is_routed(x)] + route_backup, reverse=True)
+        need = max(0, ROUTE_MIN_PIECES - len(have))
+        if need and extra:
+            add = extra[:need]
+            others = [x for x in picked if not _is_routed(x)]
+            picked = sorted(have + others[:max(0, top_k - len(have) - len(add))] + add, reverse=True)
+            log("SEARCH", f"📌 added {len(add)} passage(s) from the named scheme's PDF ({chunks[add[0][2]]['document']})")
 
     results = []
-    for _key, _rank, doc_id, kw, sp, raw, ms, final in scored[:top_k]:
+    for _key, _rank, doc_id, kw, sp, raw, ms, final in picked:
         doc_data = dict(chunks[doc_id])
         doc_data.update({
             "keyword_score": round(kw, 4),
