@@ -15,7 +15,7 @@ JUDGES -- nobody grades its own answers
   Sarvam's answers      -> judged by Groq and Cloudflare
   Groq's answers        -> judged by Sarvam and Cloudflare
   Cloudflare's answers  -> judged by Sarvam and Groq
-  Sarvam-alone answers  -> judged by Groq (kept off Cloudflare to stay inside its free limit)
+  Sarvam-alone answers  -> judged by Groq and Cloudflare
   The Groq judge uses a different Groq model (openai/gpt-oss-20b) than the Groq contestant,
   because Groq gives every model its own free daily limit.
   Judges don't know which AI wrote which answer (labels are shuffled).
@@ -75,7 +75,7 @@ CONTESTANTS = {
     "cloudflare": {"name": "Cloudflare Llama 3.3 70B + our documents", "short": "Cloudflare + docs", "kind": "rag",
                    "order": ["cloudflare"], "judges": ["sarvam", "groq"]},
     "sarvam_plain": {"name": "Sarvam alone (no documents)", "short": "Sarvam alone", "kind": "plain",
-                     "order": ["sarvam"], "judges": ["groq"]},
+                     "order": ["sarvam"], "judges": ["groq", "cloudflare"]},
 }
 JUDGES = {
     "sarvam": "Sarvam · sarvam-105b",

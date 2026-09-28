@@ -105,7 +105,7 @@ The chat shows which AI answered (a small note appears when a backup was used), 
 
 **Contestants.** Three AIs from three companies each answer every question **using our document search**: Sarvam (`sarvam-105b`), Groq (`gpt-oss-120b`) and Cloudflare (Llama 3.3 70B). A fourth contestant, **Sarvam alone** with the same instructions but no documents, shows what our search adds.
 
-**Judges — nobody grades its own work.** Sarvam's answers are graded by Groq and Cloudflare, Groq's by Sarvam and Cloudflare, Cloudflare's by Sarvam and Groq (Sarvam-alone by Groq). Judges see shuffled labels, so they don't know who wrote which answer. Grades: correct / partial / wrong against the answer key. Free automatic checks run too: key fact present, answer script matches the chosen language, off-topic refused, no wrong refusals, correct PDF shown, search rank.
+**Judges — nobody grades its own work.** Sarvam's answers are graded by Groq and Cloudflare, Groq's by Sarvam and Cloudflare, Cloudflare's by Sarvam and Groq (Sarvam-alone by Groq and Cloudflare). Judges see shuffled labels, so they don't know who wrote which answer. Grades: correct / partial / wrong against the answer key. Free automatic checks run too: key fact present, answer script matches the chosen language, off-topic refused, no wrong refusals, correct PDF shown, search rank.
 
 **See it live:** **https://sahakar-sahayak-4.onrender.com/scoreboard** — every question, every answer and every grade. Visitors can only re-run the free search check, so nobody can spend the team's AI credits from that page. Latest numbers are also in [`benchmark_report.md`](benchmark_report.md).
 

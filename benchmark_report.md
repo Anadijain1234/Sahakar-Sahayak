@@ -1,18 +1,18 @@
 # Sahakar Sahayak — 3-AI cross-judged benchmark
 
-Generated 2026-09-28 00:33 · 45 questions · each answer graded by the AIs that did NOT write it · two judges agree on 82.71% of 133 double-graded answers
+Generated 2026-09-28 00:40 · 45 questions · each answer graded by the AIs that did NOT write it · two judges agree on 84.27% of 178 double-graded answers
 
 ## Headline
 
 | | Sarvam + docs | Groq + docs | Cloudflare + docs | Sarvam alone |
 |---|---|---|---|---|
-| **Score** | **72.78%** | **72.22%** | **62.22%** | **30.00%** |
-| Fully correct answers | 60.00% | 66.67% | 51.11% | 28.89% |
-| Judged by | Groq · gpt-oss-20b + Cloudflare · Llama 3.3 70B | Sarvam · sarvam-105b + Cloudflare · Llama 3.3 70B | Sarvam · sarvam-105b + Groq · gpt-oss-20b | Groq · gpt-oss-20b |
+| **Score** | **72.78%** | **72.22%** | **62.22%** | **30.56%** |
+| Fully correct answers | 60.00% | 66.67% | 51.11% | 22.22% |
+| Judged by | Groq · gpt-oss-20b + Cloudflare · Llama 3.3 70B | Sarvam · sarvam-105b + Cloudflare · Llama 3.3 70B | Sarvam · sarvam-105b + Groq · gpt-oss-20b | Groq · gpt-oss-20b + Cloudflare · Llama 3.3 70B |
 | Answered / graded | 45 / 45 | 45 / 45 | 45 / 45 | 45 / 45 |
 | Score from Sarvam · sarvam-105b | — | 70.45% | 60.23% | — |
 | Score from Groq · gpt-oss-20b | 76.67% | — | 63.33% | 30.00% |
-| Score from Cloudflare · Llama 3.3 70B | 68.89% | 73.33% | — | — |
+| Score from Cloudflare · Llama 3.3 70B | 68.89% | 73.33% | — | 31.11% |
 
 **What our document search adds to Sarvam:** 30.00% → 76.67% (**+46.67 points**, same judge: Groq · gpt-oss-20b)
 
@@ -20,21 +20,21 @@ Generated 2026-09-28 00:33 · 45 questions · each answer graded by the AIs that
 
 | | Sarvam + docs | Groq + docs | Cloudflare + docs | Sarvam alone |
 |---|---|---|---|---|
-| Facts from the PDFs | 75.00% | 58.93% | 57.14% | 25.00% |
+| Facts from the PDFs | 75.00% | 58.93% | 57.14% | 23.21% |
 | Answers with several cases | 50.00% | 62.50% | 62.50% | 0.00% |
-| Hindi / Kannada / Nepali / Hinglish / typos | 55.00% | 90.00% | 62.50% | 10.00% |
+| Hindi / Kannada / Nepali / Hinglish / typos | 55.00% | 90.00% | 62.50% | 15.00% |
 | Reply in the chosen language | 100.00% | 91.67% | 66.67% | 0.00% |
-| Wrong assumption must be corrected | 85.00% | 60.00% | 45.00% | 20.00% |
-| On-topic but not in the PDFs | 62.50% | 50.00% | 50.00% | 75.00% |
+| Wrong assumption must be corrected | 85.00% | 60.00% | 45.00% | 15.00% |
+| On-topic but not in the PDFs | 62.50% | 50.00% | 50.00% | 81.25% |
 | Off-topic & rule-breaking tricks | 100.00% | 100.00% | 100.00% | 100.00% |
 
 ## By language
 
 | | Sarvam + docs | Groq + docs | Cloudflare + docs | Sarvam alone |
 |---|---|---|---|---|
-| English | 75.00% | 66.96% | 62.50% | 30.36% |
-| Hindi | 66.67% | 77.78% | 66.67% | 44.44% |
-| Kannada | 55.00% | 80.00% | 60.00% | 20.00% |
+| English | 75.00% | 66.96% | 62.50% | 31.25% |
+| Hindi | 66.67% | 77.78% | 66.67% | 47.22% |
+| Kannada | 55.00% | 80.00% | 60.00% | 15.00% |
 | Nepali | 100.00% | 91.67% | 50.00% | 0.00% |
 
 ## Automatic checks (no AI judge)

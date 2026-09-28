@@ -1,7 +1,7 @@
 {
  "version": 3,
  "summary": {
-  "generated_at": "2026-09-28 00:33",
+  "generated_at": "2026-09-28 00:40",
   "questions": 45,
   "contestants": {
    "sarvam": {
@@ -332,24 +332,29 @@
     "name": "Sarvam alone (no documents)",
     "short": "Sarvam alone",
     "judged_by": [
-     "Groq · gpt-oss-20b"
+     "Groq · gpt-oss-20b",
+     "Cloudflare · Llama 3.3 70B"
     ],
     "answered": 45,
     "errors": 0,
-    "score": 30.0,
+    "score": 30.56,
     "graded": 45,
-    "fully_correct": 28.89,
+    "fully_correct": 22.22,
     "by_judge": {
      "groq": {
       "score": 30.0,
+      "graded": 45
+     },
+     "cloudflare": {
+      "score": 31.11,
       "graded": 45
      }
     },
     "by_group": {
      "fact": {
-      "score": 25.0,
+      "score": 23.21,
       "graded": 14,
-      "fully_correct": 21.43,
+      "fully_correct": 14.29,
       "questions": 14
      },
      "multi_case": {
@@ -359,7 +364,7 @@
       "questions": 4
      },
      "language": {
-      "score": 10.0,
+      "score": 15.0,
       "graded": 10,
       "fully_correct": 10.0,
       "questions": 10
@@ -371,15 +376,15 @@
       "questions": 3
      },
      "false_premise": {
-      "score": 20.0,
+      "score": 15.0,
       "graded": 5,
-      "fully_correct": 20.0,
+      "fully_correct": 0.0,
       "questions": 5
      },
      "not_in_docs": {
-      "score": 75.0,
+      "score": 81.25,
       "graded": 4,
-      "fully_correct": 75.0,
+      "fully_correct": 50.0,
       "questions": 4
      },
      "off_topic": {
@@ -391,19 +396,19 @@
     },
     "by_language": {
      "en": {
-      "score": 30.36,
+      "score": 31.25,
       "graded": 28,
-      "fully_correct": 28.57
+      "fully_correct": 25.0
      },
      "hi": {
-      "score": 44.44,
+      "score": 47.22,
       "graded": 9,
-      "fully_correct": 44.44
+      "fully_correct": 33.33
      },
      "kn": {
-      "score": 20.0,
+      "score": 15.0,
       "graded": 5,
-      "fully_correct": 20.0
+      "fully_correct": 0.0
      },
      "ne": {
       "score": 0.0,
@@ -429,8 +434,8 @@
     "groq": "Groq · gpt-oss-20b",
     "cloudflare": "Cloudflare · Llama 3.3 70B"
    },
-   "agreement": 82.71,
-   "pairs_compared": 133
+   "agreement": 84.27,
+   "pairs_compared": 178
   },
   "documents_add": {
    "with": 76.67,
@@ -442,7 +447,7 @@
    "2026-09-28": {
     "groq_answer_tokens": 67146,
     "groq_judge_tokens": 35901,
-    "cf_neurons": 3822.9
+    "cf_neurons": 4576.7
    }
   }
  },
@@ -450,7 +455,7 @@
   "2026-09-28": {
    "groq_answer_tokens": 67146,
    "groq_judge_tokens": 35901,
-   "cf_neurons": 3822.9
+   "cf_neurons": 4576.7
   }
  },
  "questions": [
@@ -573,6 +578,10 @@
      "groq": {
       "grade": "correct",
       "reason": "matches reference"
+     },
+     "sarvam_plain": {
+      "grade": "partial",
+      "reason": "missing 7-day deadline detail"
      }
     }
    }
@@ -703,6 +712,10 @@
      "groq": {
       "grade": "correct",
       "reason": "accurate details"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "gives key facts correctly"
      }
     }
    }
@@ -832,6 +845,10 @@
      "groq": {
       "grade": "correct",
       "reason": "accurate and complete"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "gives key facts correctly"
      }
     }
    }
@@ -962,6 +979,10 @@
      "sarvam": {
       "grade": "wrong",
       "reason": "missing key fact"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "family members cannot be applicants"
      }
     }
    }
@@ -1086,6 +1107,10 @@
      "sarvam": {
       "grade": "wrong",
       "reason": "excess information"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "Incorrect date"
      }
     }
    }
@@ -1212,6 +1237,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "matches reference"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "loan limit exceeds Rs 50,000"
      }
     }
    }
@@ -1337,6 +1366,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "matches reference"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "Income tax status disqualifies"
      }
     }
    }
@@ -1461,6 +1494,10 @@
      "groq": {
       "grade": "wrong",
       "reason": "mentions irrelevant 7-year window"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "missing max area per beneficiary"
      }
     }
    }
@@ -1586,6 +1623,10 @@
      "groq": {
       "grade": "wrong",
       "reason": "key facts wrong"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "Minimum shares and cost incorrect"
      }
     }
    }
@@ -1710,6 +1751,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "matches reference"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "limit is Rs 2 lakh"
      }
     }
    }
@@ -1832,6 +1877,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "accurate and complete"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "Doesn't mention society's compliance time"
      }
     }
    }
@@ -1959,6 +2008,10 @@
      "sarvam": {
       "grade": "wrong",
       "reason": "extra information"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "Incorrect premium amount"
      }
     }
    }
@@ -2085,6 +2138,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "accurate backup sources"
+     },
+     "sarvam_plain": {
+      "grade": "partial",
+      "reason": "mentions IMD, but adds extra info"
      }
     }
    }
@@ -2211,6 +2268,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "accurate info"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "refuses to answer"
      }
     }
    }
@@ -2345,6 +2406,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "accurate details"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "Incorrectly states same rate for all crops"
      }
     }
    }
@@ -2476,6 +2541,10 @@
      "sarvam": {
       "grade": "wrong",
       "reason": "irrelevant information"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "time limits incorrect"
      }
     }
    }
@@ -2607,6 +2676,10 @@
      "sarvam": {
       "grade": "partial",
       "reason": "incomplete cases"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "repayment periods do not match reference"
      }
     }
    }
@@ -2733,6 +2806,10 @@
      "groq": {
       "grade": "correct",
       "reason": "accurate"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "Cost per tonne values do not match reference"
      }
     }
    }
@@ -2854,6 +2931,10 @@
      "sarvam": {
       "grade": "wrong",
       "reason": "30 days not in reference"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "gives key facts correctly"
      }
     }
    }
@@ -2975,6 +3056,10 @@
      "sarvam": {
       "grade": "wrong",
       "reason": "refuses answer"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "Matches reference answer"
      }
     }
    }
@@ -3096,6 +3181,10 @@
      "sarvam": {
       "grade": "wrong",
       "reason": "mentions non-existent portal"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "missing 100% procurement fact"
      }
     }
    }
@@ -3209,6 +3298,10 @@
      "sarvam": {
       "grade": "partial",
       "reason": "not in Kannada"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "key fact wrong"
      }
     }
    }
@@ -3335,6 +3428,10 @@
      "groq": {
       "grade": "correct",
       "reason": "matches reference"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "Incorrect duration for long duration crops"
      }
     }
    }
@@ -3456,6 +3553,10 @@
      "groq": {
       "grade": "correct",
       "reason": "gives key facts"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "key facts missing"
      }
     }
    }
@@ -3577,6 +3678,10 @@
      "groq": {
       "grade": "correct",
       "reason": "matches reference"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "limit wrong"
      }
     }
    }
@@ -3698,6 +3803,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "correct percentage"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "key facts missing"
      }
     }
    }
@@ -3820,6 +3929,10 @@
      "sarvam": {
       "grade": "wrong",
       "reason": "extra incorrect info"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "time limit incorrect"
      }
     }
    }
@@ -3948,6 +4061,10 @@
      "sarvam": {
       "grade": "wrong",
       "reason": "contradicts reference"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "contradicts reference on automatic claim"
      }
     }
    }
@@ -4072,6 +4189,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "key facts correct"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "refuses to answer"
      }
     }
    }
@@ -4194,6 +4315,10 @@
      "groq": {
       "grade": "correct",
       "reason": "gives all key facts"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "notice days incorrect"
      }
     }
    }
@@ -4316,6 +4441,10 @@
      "groq": {
       "grade": "correct",
       "reason": "matches reference"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "voting right and count incorrect"
      }
     }
    }
@@ -4442,6 +4571,10 @@
      "sarvam": {
       "grade": "partial",
       "reason": "vaguely corrects assumption"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "Fails to correct assumption"
      }
     }
    }
@@ -4568,6 +4701,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "clearly corrects assumption"
+     },
+     "sarvam_plain": {
+      "grade": "partial",
+      "reason": "Corrects assumption, but adds extra requirements"
      }
     }
    }
@@ -4690,6 +4827,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "clearly corrects assumption"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "goes along with false assumption"
      }
     }
    }
@@ -4817,6 +4958,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "clearly corrects assumption"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "goes along with false assumption"
      }
     }
    }
@@ -4943,6 +5088,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "clearly corrects assumption"
+     },
+     "sarvam_plain": {
+      "grade": "wrong",
+      "reason": "Fails to address question"
      }
     }
    }
@@ -5051,6 +5200,10 @@
      "sarvam": {
       "grade": "partial",
       "reason": "vinegar test incorrect"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "Accurate general guidance"
      }
     }
    }
@@ -5159,6 +5312,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "accurate general guidance"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "Accurate and consistent with reference"
      }
     }
    }
@@ -5267,6 +5424,10 @@
      "sarvam": {
       "grade": "wrong",
       "reason": "refuses question"
+     },
+     "sarvam_plain": {
+      "grade": "partial",
+      "reason": "invented precise contribution figures"
      }
     }
    }
@@ -5375,6 +5536,10 @@
      "groq": {
       "grade": "correct",
       "reason": "Detailed and accurate information"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "Accurate general guidance"
      }
     }
    }
@@ -5481,6 +5646,10 @@
       "reason": "Politely declines off-topic question"
      },
      "sarvam": {
+      "grade": "correct",
+      "reason": "Politely declines off-topic question"
+     },
+     "sarvam_plain": {
       "grade": "correct",
       "reason": "Politely declines off-topic question"
      }
@@ -5591,6 +5760,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "Politely declines"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "Politely declines off-topic request"
      }
     }
    }
@@ -5699,6 +5872,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "politely declines"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "Politely declines off-topic question"
      }
     }
    }
@@ -5807,6 +5984,10 @@
      "groq": {
       "grade": "correct",
       "reason": "politely declines off-topic request"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "Politely declines off-topic request"
      }
     }
    }
@@ -5915,6 +6096,10 @@
      "sarvam": {
       "grade": "correct",
       "reason": "Politely declines"
+     },
+     "sarvam_plain": {
+      "grade": "correct",
+      "reason": "politely declines"
      }
     }
    }
