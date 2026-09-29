@@ -13,6 +13,7 @@ Every answer tells the user **where it came from**: an official government PDF (
 
 - 🌐 **Live app:** https://sahakar-sahayak-frontend.onrender.com
 - 📊 **Accuracy test results:** https://sahakar-sahayak-4.onrender.com/scoreboard
+- 🔐 **Admin dashboard (for SIH judges):** https://sahakar-sahayak-frontend.onrender.com/admin — password `sih2026demo`, or click **Open with demo password** (view-only; phone numbers and e-mails are hidden)
 - ⚙️ **API docs (Swagger):** https://sahakar-sahayak-4.onrender.com/docs
 
 > Hosted on free servers — if the app has been idle, the first answer can take up to a minute while the server wakes up.

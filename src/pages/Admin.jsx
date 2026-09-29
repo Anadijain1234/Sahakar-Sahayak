@@ -6,6 +6,9 @@ import { Lock, RefreshCw, Download, LogOut, BarChart3, AlertTriangle, ArrowLeft 
 // /insights.json, protected by the INSIGHTS_KEY password set in Render.
 const API = (import.meta.env.VITE_API_URL || 'https://sahakar-sahayak-4.onrender.com').replace(/\/$/, '');
 const KEY_STORE = 'sahakar_insights_key';
+// Shown on the login box so SIH judges can open this page (the data is view-only).
+// It must match INSIGHTS_KEY in Render. After SIH: set this to '' and change INSIGHTS_KEY.
+const DEMO_PASSWORD = 'sih2026demo';
 
 const LANG_NAMES = { en: 'English', hi: 'Hindi', kn: 'Kannada', ne: 'Nepali', ta: 'Tamil', te: 'Telugu', ml: 'Malayalam' };
 const AI_NAMES = { sarvam: 'Sarvam AI', groq: 'Groq (backup)', cloudflare: 'Cloudflare (backup)', search_only: 'Search only (no AI)', unknown: 'Not recorded' };
@@ -104,6 +107,8 @@ export const Admin = () => {
     setInput('');
   };
 
+  const openDemo = () => { saveKey(DEMO_PASSWORD); setKey(DEMO_PASSWORD); setInput(''); };
+
   const logout = () => { saveKey(''); setKey(''); setData(null); setStatus('login'); };
 
   const downloadCsv = async () => {
@@ -158,7 +163,15 @@ export const Admin = () => {
         {status === 'login' && (
           <form onSubmit={login} className="max-w-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-3">
             <p className="text-sm font-semibold flex items-center gap-2"><Lock className="h-4 w-4" /> Admin password</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">The INSIGHTS_KEY you set in Render → Environment.</p>
+            {DEMO_PASSWORD ? (
+              <div className="rounded-lg bg-primary-50 dark:bg-primary-950/30 border border-primary-200 dark:border-primary-900/60 px-3 py-2 text-sm text-primary-700 dark:text-primary-300">
+                <span className="font-semibold">For SIH judges:</span> the password is{' '}
+                <code className="font-mono font-bold select-all">{DEMO_PASSWORD}</code>
+                <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">View-only: the questions people asked (phone numbers and e-mails hidden).</span>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500 dark:text-slate-400">The INSIGHTS_KEY you set in Render → Environment.</p>
+            )}
             <input
               type="password"
               value={input}
@@ -169,6 +182,11 @@ export const Admin = () => {
             />
             {error && <p className="text-xs text-red-600">{error}</p>}
             <button type="submit" className="w-full rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold py-2">Open insights</button>
+            {DEMO_PASSWORD && (
+              <button type="button" onClick={openDemo} className="w-full rounded-lg border border-primary-200 dark:border-primary-900/60 text-primary-700 dark:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-950/30 text-sm font-semibold py-2">
+                Open with demo password
+              </button>
+            )}
           </form>
         )}
 
